@@ -2,7 +2,14 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { selectTake } from "./mutations";
+import {
+  EntityCorruptError,
+  EntityNotFoundError,
+  EntityValidationError,
+  type EntityType,
+  selectTake,
+  TakeNotFoundError,
+} from "./mutations";
 import { paths } from "./paths";
 
 describe("selectTake", () => {
@@ -60,7 +67,9 @@ describe("selectTake", () => {
         selectedTakeId: "550e8400-e29b-41d4-a716-446655440000",
       }),
     );
-    await expect(selectTake("characters", id, "999e8400-e29b-41d4-a716-446655440000")).rejects.toThrow();
+    await expect(
+      selectTake("characters", id, "999e8400-e29b-41d4-a716-446655440000"),
+    ).rejects.toBeInstanceOf(TakeNotFoundError);
   });
 
   it("works on a location", async () => {
@@ -107,13 +116,53 @@ describe("selectTake", () => {
     expect(updated.selectedTakeId).toBe("880e8400-e29b-41d4-a716-446655440000");
   });
 
-  it("rejects an invalid entity type", async () => {
-    await expect(selectTake("unknown", "x", "550e8400-e29b-41d4-a716-446655440000")).rejects.toThrow();
-  });
-
-  it("rejects a missing entity file", async () => {
+  it("rejects a missing entity file with EntityNotFoundError", async () => {
     await expect(
       selectTake("characters", "does-not-exist", "550e8400-e29b-41d4-a716-446655440000"),
+    ).rejects.toBeInstanceOf(EntityNotFoundError);
+  });
+
+  it("rejects an id that escapes the entity dir (path traversal)", async () => {
+    // Defense-in-depth — exercise the regex+relative path guard.
+    await expect(
+      selectTake("characters", "../../etc/passwd", "550e8400-e29b-41d4-a716-446655440000"),
+    ).rejects.toBeInstanceOf(EntityValidationError);
+  });
+
+  it("rejects an id with disallowed characters", async () => {
+    await expect(
+      selectTake("characters", "name with spaces", "550e8400-e29b-41d4-a716-446655440000"),
+    ).rejects.toBeInstanceOf(EntityValidationError);
+  });
+
+  it("rejects an entity file with malformed JSON as EntityCorruptError", async () => {
+    const id = "bad-json";
+    await fs.writeFile(path.join(tmpRoot, "characters", `${id}.json`), "{not json");
+    await expect(
+      selectTake("characters", id, "550e8400-e29b-41d4-a716-446655440000"),
+    ).rejects.toBeInstanceOf(EntityCorruptError);
+  });
+
+  it("rejects an entity file that fails schema validation as EntityCorruptError", async () => {
+    const id = "bad-shape";
+    await fs.writeFile(
+      path.join(tmpRoot, "characters", `${id}.json`),
+      JSON.stringify({ id, name: "C" }), // missing required fields
+    );
+    await expect(
+      selectTake("characters", id, "550e8400-e29b-41d4-a716-446655440000"),
+    ).rejects.toBeInstanceOf(EntityCorruptError);
+  });
+
+  it("rejects an unsupported entity type at the type system boundary", async () => {
+    // Defense-in-depth: route narrows via Zod, but a misuse-from-internal-code
+    // should still fail loudly. We cast through unknown to simulate that.
+    await expect(
+      selectTake(
+        "unknown" as unknown as EntityType,
+        "char1",
+        "550e8400-e29b-41d4-a716-446655440000",
+      ),
     ).rejects.toThrow();
   });
 });
