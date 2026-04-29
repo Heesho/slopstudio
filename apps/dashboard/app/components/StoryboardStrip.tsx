@@ -13,9 +13,13 @@ export default function StoryboardStrip({ scenes, episodeId }: Props) {
     return <p className="text-sm text-neutral-500 italic">No scenes yet.</p>;
   }
 
+  // Contract: shows scenes in `order` ascending. Sort defensively so callers
+  // don't need to pre-sort.
+  const sortedScenes = [...scenes].sort((a, b) => a.order - b.order);
+
   return (
     <div className="flex gap-3 overflow-x-auto pb-2">
-      {scenes.map((scene) => {
+      {sortedScenes.map((scene) => {
         const selectedTake: VideoTake | null =
           scene.takes.find((t) => t.jobId === scene.selectedTakeId) ?? null;
         const status: TakeStatus = selectedTake?.status ?? "pending";
@@ -26,7 +30,7 @@ export default function StoryboardStrip({ scenes, episodeId }: Props) {
         return (
           <Link
             key={scene.id}
-            href={`/scenes?episode=${episodeId}`}
+            href={`/scenes?episode=${episodeId}#scene-${scene.id}`}
             className="flex-shrink-0 w-32 group"
           >
             <div className="w-32 aspect-[9/16] rounded overflow-hidden bg-neutral-900 ring-1 ring-neutral-800 group-hover:ring-neutral-600 transition-colors">

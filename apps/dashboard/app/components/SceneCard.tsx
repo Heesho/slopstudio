@@ -35,7 +35,10 @@ export default function SceneCard({ scene, episodeNumber, episodeTitle }: Props)
       : `Scene ${scene.order}`;
 
   return (
-    <div className="rounded-lg border border-neutral-800 bg-neutral-900/50 overflow-hidden">
+    <div
+      id={`scene-${scene.id}`}
+      className="scroll-mt-24 rounded-lg border border-neutral-800 bg-neutral-900/50 overflow-hidden"
+    >
       {/* Hero video — constrained to a sensible width so 9:16 doesn't dominate */}
       <div className="bg-black">
         <div className="max-w-xs mx-auto">
