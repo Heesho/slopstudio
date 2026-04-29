@@ -9,7 +9,7 @@ dist/
 out/
 
 # Generated media (large; reproducible from content/)
-media/
+/media/
 
 # Env / secrets
 .env
