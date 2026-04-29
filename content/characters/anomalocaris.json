@@ -1,0 +1,9 @@
+{
+  "id": "anomalocaris",
+  "name": "Anomalocaris",
+  "imagePrompt": "Anomalocaris canadensis, 1m segmented body, lateral fins running along entire flank, large stalked compound eyes, two grasping appendages near a circular disc-shaped mouth (oral cone), mottled red-orange iridescent coloration, scientifically accurate paleontological reconstruction",
+  "description": "Apex predator of the Cambrian seas. Glides with slow, deliberate undulations of its lateral fins; accelerates with sudden bursts to seize prey. Carries the bearing of a creature that has never been hunted. Its compound eyes track prey across great distances — among the first true predator-vision in the fossil record.",
+  "imageModel": "nano_banana_2",
+  "takes": [],
+  "selectedTakeId": null
+}

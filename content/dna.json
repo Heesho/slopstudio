@@ -1,0 +1,14 @@
+{
+  "title": "Cambrian: Earth's First Predators",
+  "concept": "Planet Earth-style shortform docuseries about life 540 million years ago — when the first eyes opened on a world that had never been hunted before.",
+  "stylePrompt": "Photorealistic BBC Planet Earth aesthetic, cinematic 9:16 vertical, dramatic god-rays cutting through ancient ocean water, scientifically accurate Cambrian fauna, shallow depth of field, slow deliberate camera movement, rich color grading with deep teals and amber highlights",
+  "narratorVoice": "Calm, authoritative, sense of wonder — Attenborough-style. Patient cadence; lets imagery breathe.",
+  "aspectRatio": "9:16",
+  "videoModel": "seedance_2_0",
+  "characterImageModel": "nano_banana_2",
+  "characterRefAspectRatio": "16:9",
+  "characterRefTemplate": "Character reference sheet, three panels in one image: full-body side view on the left, full-body alternate angle in the middle, close-up anatomical detail on the right. Consistent lighting and pose energy across all three panels. Scientifically accurate paleontological reconstruction. {imagePrompt}",
+  "locationImageModel": "nano_banana_2",
+  "locationRefAspectRatio": "16:9",
+  "locationRefTemplate": "Location reference sheet, three views composed in one image: wide establishing shot on the left, mid-range angle in the middle, close-up textural detail on the right. Cohesive atmospheric lighting across all three views. {imagePrompt}"
+}
