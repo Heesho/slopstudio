@@ -48,14 +48,38 @@ export default async function ScenesPage(props: { searchParams: SearchParams }) 
     });
   }
 
-  // Sort by episodeId, then order
-  filtered = [...filtered].sort((a, b) =>
-    a.episodeId === b.episodeId ? a.order - b.order : a.episodeId.localeCompare(b.episodeId),
-  );
+  // Sort by episode number, then order. Use number (not id) so ep-10 sorts after ep-2.
+  // Orphan scenes whose episode is missing sort to the end deterministically.
+  const episodeNumber = (id: string) =>
+    episodeMap.get(id)?.number ?? Number.POSITIVE_INFINITY;
+  filtered = [...filtered].sort((a, b) => {
+    const en = episodeNumber(a.episodeId) - episodeNumber(b.episodeId);
+    return en !== 0 ? en : a.order - b.order;
+  });
 
   return (
     <div>
       <h1 className="text-2xl font-semibold mb-6">Scenes</h1>
+      {(params.character || params.location) && (
+        <div className="text-xs text-neutral-400 mb-3">
+          {params.character && (
+            <span>
+              Filtering by character:{" "}
+              <span className="font-mono text-neutral-200">{params.character}</span>
+            </span>
+          )}
+          {params.location && (
+            <span>
+              Filtering by location:{" "}
+              <span className="font-mono text-neutral-200">{params.location}</span>
+            </span>
+          )}
+          {" · "}
+          <a href="/scenes" className="hover:text-neutral-200">
+            remove
+          </a>
+        </div>
+      )}
       <FilterBar episodes={episodes} current={params} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {filtered.map((s) => {
@@ -84,12 +108,20 @@ function FilterBar({
   current,
 }: {
   episodes: Episode[];
-  current: { episode?: string; status?: string };
+  current: { episode?: string; status?: string; character?: string; location?: string };
 }) {
   // Form-based filter: server-side via URL params, no JS needed.
   // defaultValue (not value) keeps this uncontrolled — URL is the source of truth.
+  // Hidden inputs roundtrip deep-link params (character/location) so they survive
+  // form submission — without them, HTML form GET would drop unrelated query params.
   return (
     <form method="get" className="flex flex-wrap items-center gap-3 mb-6 text-sm">
+      {current.character && (
+        <input type="hidden" name="character" value={current.character} />
+      )}
+      {current.location && (
+        <input type="hidden" name="location" value={current.location} />
+      )}
       <select
         name="episode"
         defaultValue={current.episode ?? ""}
