@@ -1,3 +1,4 @@
+import EmptyState from "../components/EmptyState";
 import { readDna } from "@/lib/content";
 import type { Dna } from "@/lib/schemas";
 
@@ -41,27 +42,23 @@ function PromptBlock({
   );
 }
 
-function EmptyState() {
-  return (
-    <div className="flex justify-center py-16">
-      <div className="max-w-xl rounded-lg border border-neutral-800 bg-neutral-900/50 p-8 text-center">
-        <h1 className="text-2xl font-semibold">No DNA yet</h1>
-        <p className="mt-3 text-sm text-neutral-400">
-          No DNA defined yet. Ask Claude to create{" "}
-          <code className="font-mono text-neutral-200">content/dna.json</code> with your
-          show&apos;s style and concept.
-        </p>
-      </div>
-    </div>
-  );
-}
-
 export default async function DnaPage() {
   let dna: Dna;
   try {
     dna = await readDna();
   } catch {
-    return <EmptyState />;
+    return (
+      <EmptyState
+        title="No DNA yet"
+        body={
+          <>
+            No DNA defined yet. Ask Claude to create{" "}
+            <code className="font-mono text-neutral-200">content/dna.json</code> with your
+            show&apos;s style and concept.
+          </>
+        }
+      />
+    );
   }
 
   return (

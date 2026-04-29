@@ -26,9 +26,9 @@ export default function Header({ title, state }: { title: string; state: State }
   return (
     <header className="border-b border-neutral-800 bg-neutral-950/80 backdrop-blur sticky top-0 z-10">
       <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-6">
-        <h1 className="font-mono text-sm tracking-wide text-neutral-300 truncate">
+        <p className="font-mono text-sm tracking-wide text-neutral-300 truncate">
           {title}
-        </h1>
+        </p>
         <nav className="flex gap-6">
           {TABS.map((t) => (
             <Link
