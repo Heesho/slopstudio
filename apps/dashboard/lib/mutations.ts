@@ -105,3 +105,49 @@ export async function selectTake(type: EntityType, id: string, jobId: string) {
   }
   await writeAtomic(file, { ...data, selectedTakeId: jobId });
 }
+
+export async function deleteTake(type: EntityType, id: string, jobId: string) {
+  const { file, data } = await readEntity(type, id);
+  const take = data.takes.find((t) => t.jobId === jobId);
+  if (!take) {
+    throw new TakeNotFoundError(`take ${jobId} not found on ${type}/${id}`);
+  }
+
+  // Resolve the on-disk file to unlink (imagePath for images, videoPath for video).
+  // The path is repo-root-relative (e.g. "media/characters/foo/abc.png").
+  const filePath =
+    "imagePath" in take && typeof take.imagePath === "string"
+      ? take.imagePath
+      : "videoPath" in take && typeof take.videoPath === "string"
+        ? take.videoPath
+        : undefined;
+
+  if (filePath) {
+    // mediaDir is the absolute path to <repo>/media, so we need to strip the leading "media/" segment from the JSON-stored path.
+    const normalized = filePath.replace(/\\/g, "/").replace(/^\/+/, "");
+    const relInsideMedia = normalized.startsWith("media/") ? normalized.slice("media/".length) : normalized;
+    const absolutePath = path.join(paths.mediaDir, relInsideMedia);
+    // Ensure we're still inside mediaDir (defense-in-depth)
+    const mediaRoot = path.resolve(paths.mediaDir);
+    const resolved = path.resolve(absolutePath);
+    if (resolved.startsWith(mediaRoot + path.sep) || resolved === mediaRoot) {
+      try {
+        await fs.unlink(resolved);
+      } catch {
+        // Silently ignore missing file or unlink failure — JSON state is the
+        // source of truth; orphaned media is preferable to a stuck delete.
+      }
+    }
+  }
+
+  const remaining = data.takes.filter((t) => t.jobId !== jobId);
+  let nextSelected: string | null = data.selectedTakeId;
+  if (data.selectedTakeId === jobId) {
+    // Fall back to most recent `done` take; null if none.
+    const candidates = remaining.filter((t) => t.status === "done");
+    candidates.sort((a, b) => (b.generatedAt ?? "").localeCompare(a.generatedAt ?? ""));
+    nextSelected = candidates[0]?.jobId ?? null;
+  }
+
+  await writeAtomic(file, { ...data, takes: remaining, selectedTakeId: nextSelected });
+}
