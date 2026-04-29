@@ -29,7 +29,6 @@ export default async function CharactersPage() {
             prompt={c.imagePrompt}
             description={c.description}
             appearsInScenes={counts.get(c.id) ?? 0}
-            kind="image"
           />
         ))}
       </div>

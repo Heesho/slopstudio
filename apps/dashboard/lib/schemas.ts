@@ -10,6 +10,7 @@ const ImageTake = z.object({
   generatedAt: z.string().optional(),
   error: z.string().optional(),
 });
+export type ImageTake = z.infer<typeof ImageTake>;
 
 const VideoTake = z.object({
   jobId: z.string().uuid(),
@@ -18,6 +19,7 @@ const VideoTake = z.object({
   generatedAt: z.string().optional(),
   error: z.string().optional(),
 });
+export type VideoTake = z.infer<typeof VideoTake>;
 
 export const DnaSchema = z.object({
   title: z.string(),

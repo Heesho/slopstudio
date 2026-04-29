@@ -3,24 +3,15 @@
 import { Check, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { TakeStatus } from "@/lib/schemas";
+import type { ImageTake } from "@/lib/schemas";
 import { mediaUrl } from "@/lib/media";
 import StatusChip from "./StatusChip";
-
-type Take = {
-  jobId: string;
-  imagePath?: string;
-  videoPath?: string;
-  status: TakeStatus;
-  error?: string;
-};
 
 type Props = {
   entityType: "characters" | "locations" | "scenes";
   entityId: string;
-  takes: Take[];
+  takes: ImageTake[];
   selectedTakeId: string | null;
-  kind: "image" | "video";
 };
 
 export default function TakeStrip({
@@ -28,7 +19,6 @@ export default function TakeStrip({
   entityId,
   takes,
   selectedTakeId,
-  kind,
 }: Props) {
   const router = useRouter();
   const [busyJobId, setBusyJobId] = useState<string | null>(null);
@@ -85,7 +75,7 @@ export default function TakeStrip({
       {takes.map((t) => {
         const isSelected = t.jobId === selectedTakeId;
         const isBusy = busyJobId === t.jobId;
-        const thumbSrc = kind === "image" ? t.imagePath : t.videoPath;
+        const thumbSrc = t.imagePath;
         const ringClass = isSelected ? "ring-2 ring-emerald-500" : "ring-1 ring-neutral-700";
         return (
           <div key={t.jobId} className="flex flex-col items-center gap-1">
@@ -93,21 +83,12 @@ export default function TakeStrip({
               className={`w-16 h-16 rounded overflow-hidden bg-neutral-800 ${ringClass}`}
             >
               {thumbSrc ? (
-                kind === "image" ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={mediaUrl(thumbSrc)}
-                    alt=""
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <video
-                    src={mediaUrl(thumbSrc)}
-                    className="w-full h-full object-cover"
-                    muted
-                    playsInline
-                  />
-                )
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={mediaUrl(thumbSrc)}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-[10px] text-neutral-500">
                   {t.status}

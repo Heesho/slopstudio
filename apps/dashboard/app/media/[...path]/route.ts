@@ -13,9 +13,20 @@ export async function GET(_req: Request, ctx: { params: Promise<{ path: string[]
     return new Response("forbidden", { status: 403 });
   }
 
+  // Defense-in-depth against symlink escape: resolve symlinks and re-check.
+  let realPath: string;
   try {
-    const data = await fs.readFile(resolved);
-    const ext = path.extname(resolved).toLowerCase();
+    realPath = await fs.realpath(resolved);
+  } catch {
+    return new Response("not found", { status: 404 });
+  }
+  if (!realPath.startsWith(mediaRoot + path.sep) && realPath !== mediaRoot) {
+    return new Response("forbidden", { status: 403 });
+  }
+
+  try {
+    const data = await fs.readFile(realPath);
+    const ext = path.extname(realPath).toLowerCase();
     const types: Record<string, string> = {
       ".png": "image/png",
       ".jpg": "image/jpeg",

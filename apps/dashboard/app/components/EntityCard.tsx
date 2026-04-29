@@ -1,21 +1,13 @@
 import Link from "next/link";
-import type { TakeStatus } from "@/lib/schemas";
+import type { ImageTake, TakeStatus } from "@/lib/schemas";
 import { mediaUrl } from "@/lib/media";
 import StatusChip from "./StatusChip";
 import TakeStrip from "./TakeStrip";
 
-type Take = {
-  jobId: string;
-  imagePath?: string;
-  videoPath?: string;
-  status: TakeStatus;
-  error?: string;
-};
-
 type Entity = {
   id: string;
   name: string;
-  takes: Take[];
+  takes: ImageTake[];
   selectedTakeId: string | null;
 };
 
@@ -25,7 +17,6 @@ type Props = {
   prompt: string;
   description?: string;
   appearsInScenes?: number;
-  kind: "image";
 };
 
 export default function EntityCard({
@@ -34,7 +25,6 @@ export default function EntityCard({
   prompt,
   description,
   appearsInScenes,
-  kind,
 }: Props) {
   const selectedTake = entity.takes.find((t) => t.jobId === entity.selectedTakeId) ?? null;
   const status: TakeStatus = selectedTake?.status ?? "pending";
@@ -82,7 +72,6 @@ export default function EntityCard({
             entityId={entity.id}
             takes={entity.takes}
             selectedTakeId={entity.selectedTakeId}
-            kind={kind}
           />
         </div>
 
