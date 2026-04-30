@@ -10,5 +10,13 @@
   "characterRefTemplate": "Character reference sheet, three panels in one image: full-body side view on the left, full-body alternate angle in the middle, close-up anatomical detail on the right. Consistent lighting and pose energy across all three panels. Scientifically accurate paleontological reconstruction. {imagePrompt}",
   "locationImageModel": "nano_banana_2",
   "locationRefAspectRatio": "16:9",
-  "locationRefTemplate": "Location reference sheet, three views composed in one image: wide establishing shot on the left, mid-range angle in the middle, close-up textural detail on the right. Cohesive atmospheric lighting across all three views. {imagePrompt}"
+  "locationRefTemplate": "Location reference sheet, three views composed in one image: wide establishing shot on the left, mid-range angle in the middle, close-up textural detail on the right. Cohesive atmospheric lighting across all three views. {imagePrompt}",
+  "genre": "drama",
+  "colorPalette": "deep teals with warm amber highlights",
+  "lighting": "dramatic god-rays from above, soft volumetric particulate",
+  "cameraMoveset": "slow deliberate dolly, patient observation",
+  "camera": "auto",
+  "lens": "auto",
+  "focalLength": "auto",
+  "aperture": "auto"
 }
