@@ -1,4 +1,6 @@
 import EmptyState from "@/app/components/EmptyState";
+import EditableText from "@/app/components/editable/EditableText";
+import EditableTextArea from "@/app/components/editable/EditableTextArea";
 import StoryboardStrip from "@/app/components/StoryboardStrip";
 import { readAllEpisodes, readAllScenes } from "@/lib/content";
 import type { Scene, TakeStatus } from "@/lib/schemas";
@@ -64,12 +66,28 @@ export default async function EpisodesPage() {
             className="mb-12 border-b border-neutral-800 pb-10 last:border-b-0 last:mb-0"
           >
             <div className="flex items-start justify-between gap-3 mb-1">
-              <h2 className="text-xl font-semibold">{episode.title}</h2>
+              <div className="flex-1 min-w-0">
+                <EditableText
+                  type="episodes"
+                  id={episode.id}
+                  field="title"
+                  value={episode.title}
+                  className="text-xl font-semibold"
+                />
+              </div>
               <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border border-neutral-700 bg-neutral-800 text-neutral-300 whitespace-nowrap shrink-0">
                 Ep {episode.number}
               </span>
             </div>
-            <p className="text-neutral-400 italic mt-1">{episode.hook}</p>
+            <div className="text-neutral-400 italic mt-1">
+              <EditableTextArea
+                type="episodes"
+                id={episode.id}
+                field="hook"
+                value={episode.hook}
+                rows={2}
+              />
+            </div>
             {summary && (
               <p className="text-xs text-neutral-500 mt-2 mb-4">{summary}</p>
             )}

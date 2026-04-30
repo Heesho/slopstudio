@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { ImageTake, TakeStatus } from "@/lib/schemas";
 import { mediaUrl } from "@/lib/media";
+import EditableText from "./editable/EditableText";
+import EditableTextArea from "./editable/EditableTextArea";
 import StatusChip from "./StatusChip";
 import TakeStrip from "./TakeStrip";
 
@@ -49,19 +51,43 @@ export default function EntityCard({
 
       <div className="p-4 space-y-3">
         <div className="flex items-center justify-between gap-3">
-          <h3 className="text-lg font-semibold truncate">{entity.name}</h3>
+          <div className="flex-1 min-w-0">
+            <EditableText
+              type={entityType}
+              id={entity.id}
+              field="name"
+              value={entity.name}
+              className="text-lg font-semibold"
+            />
+          </div>
           <StatusChip status={status} />
         </div>
 
         <div>
           <p className="text-xs uppercase tracking-wider text-neutral-400">Image prompt</p>
-          <p className="mt-1 text-sm text-neutral-300 line-clamp-3">{prompt}</p>
+          <div className="mt-1 text-sm text-neutral-300">
+            <EditableTextArea
+              type={entityType}
+              id={entity.id}
+              field="imagePrompt"
+              value={prompt}
+              rows={3}
+            />
+          </div>
         </div>
 
-        {description && (
+        {description !== undefined && (
           <div>
             <p className="text-xs uppercase tracking-wider text-neutral-400">Description</p>
-            <p className="mt-1 text-sm text-neutral-300 line-clamp-3">{description}</p>
+            <div className="mt-1 text-sm text-neutral-300">
+              <EditableTextArea
+                type={entityType}
+                id={entity.id}
+                field="description"
+                value={description}
+                rows={3}
+              />
+            </div>
           </div>
         )}
 
