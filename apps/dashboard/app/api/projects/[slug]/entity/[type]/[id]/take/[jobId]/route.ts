@@ -9,6 +9,7 @@ import {
   TakeNotFoundError,
   deleteTake,
 } from "@/lib/mutations";
+import { assertSafeSlug } from "@/lib/studio";
 
 const TypeSchema = z.enum(ENTITY_TYPES);
 const JobIdSchema = z.string().uuid();
@@ -19,9 +20,18 @@ function errMessage(err: unknown): string {
 
 export async function DELETE(
   _req: Request,
-  ctx: { params: Promise<{ type: string; id: string; jobId: string }> },
+  ctx: { params: Promise<{ slug: string; type: string; id: string; jobId: string }> },
 ) {
-  const { type, id, jobId } = await ctx.params;
+  const { slug, type, id, jobId } = await ctx.params;
+
+  try {
+    assertSafeSlug(slug);
+  } catch (err) {
+    return NextResponse.json(
+      { error: "invalid slug", detail: errMessage(err) },
+      { status: 400 },
+    );
+  }
 
   let parsedType: (typeof ENTITY_TYPES)[number];
   try {
@@ -37,7 +47,7 @@ export async function DELETE(
   }
 
   try {
-    await deleteTake(parsedType, id, jobId);
+    await deleteTake(slug, parsedType, id, jobId);
   } catch (err) {
     if (err instanceof EntityNotFoundError) {
       return NextResponse.json({ error: "entity not found" }, { status: 404 });

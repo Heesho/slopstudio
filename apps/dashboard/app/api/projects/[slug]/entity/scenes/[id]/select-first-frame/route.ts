@@ -2,31 +2,47 @@ import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import {
-  deleteTake,
   EntityCorruptError,
   EntityNotFoundError,
   EntityValidationError,
+  selectTake,
   TakeNotFoundError,
 } from "@/lib/mutations";
+import { assertSafeSlug } from "@/lib/studio";
+
+const Body = z.object({ jobId: z.string().uuid() });
 
 function errMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
 
-export async function DELETE(
-  _req: Request,
-  ctx: { params: Promise<{ id: string; jobId: string }> },
+export async function PATCH(
+  req: Request,
+  ctx: { params: Promise<{ slug: string; id: string }> },
 ) {
-  const { id, jobId } = await ctx.params;
+  const { slug, id } = await ctx.params;
 
   try {
-    z.string().uuid().parse(jobId);
-  } catch {
-    return NextResponse.json({ error: "invalid jobId" }, { status: 400 });
+    assertSafeSlug(slug);
+  } catch (err) {
+    return NextResponse.json(
+      { error: "invalid slug", detail: errMessage(err) },
+      { status: 400 },
+    );
+  }
+
+  let body: z.infer<typeof Body>;
+  try {
+    body = Body.parse(await req.json());
+  } catch (err) {
+    return NextResponse.json(
+      { error: "invalid body", detail: errMessage(err) },
+      { status: 400 },
+    );
   }
 
   try {
-    await deleteTake("scenes", id, jobId, "firstFrameTakes");
+    await selectTake(slug, "scenes", id, body.jobId, "firstFrameTakes");
   } catch (err) {
     if (err instanceof EntityNotFoundError) {
       return NextResponse.json({ error: "entity not found" }, { status: 404 });
@@ -41,7 +57,7 @@ export async function DELETE(
       return NextResponse.json({ error: err.message }, { status: 400 });
     }
     return NextResponse.json(
-      { error: "delete-first-frame failed", detail: errMessage(err) },
+      { error: "select-first-frame failed", detail: errMessage(err) },
       { status: 500 },
     );
   }

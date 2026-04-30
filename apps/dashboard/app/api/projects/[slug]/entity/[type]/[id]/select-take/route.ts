@@ -9,6 +9,7 @@ import {
   selectTake,
   TakeNotFoundError,
 } from "@/lib/mutations";
+import { assertSafeSlug } from "@/lib/studio";
 
 const Body = z.object({ jobId: z.string().uuid() });
 const TypeSchema = z.enum(ENTITY_TYPES);
@@ -19,9 +20,18 @@ function errMessage(err: unknown): string {
 
 export async function PATCH(
   req: Request,
-  ctx: { params: Promise<{ type: string; id: string }> },
+  ctx: { params: Promise<{ slug: string; type: string; id: string }> },
 ) {
-  const { type, id } = await ctx.params;
+  const { slug, type, id } = await ctx.params;
+
+  try {
+    assertSafeSlug(slug);
+  } catch (err) {
+    return NextResponse.json(
+      { error: "invalid slug", detail: errMessage(err) },
+      { status: 400 },
+    );
+  }
 
   let parsedType: (typeof ENTITY_TYPES)[number];
   try {
@@ -41,7 +51,7 @@ export async function PATCH(
   }
 
   try {
-    await selectTake(parsedType, id, body.jobId);
+    await selectTake(slug, parsedType, id, body.jobId);
   } catch (err) {
     if (err instanceof EntityNotFoundError) {
       return NextResponse.json({ error: "entity not found" }, { status: 404 });
