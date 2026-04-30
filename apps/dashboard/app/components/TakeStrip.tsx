@@ -100,7 +100,7 @@ export default function TakeStrip({
               {thumbSrc ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={mediaUrl(thumbSrc)}
+                  src={mediaUrl(slug, thumbSrc)}
                   alt=""
                   className="w-full h-full object-cover"
                 />

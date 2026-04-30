@@ -25,7 +25,7 @@ export default function StoryboardStrip({ slug, scenes, episodeId }: Props) {
           scene.takes.find((t) => t.jobId === scene.selectedTakeId) ?? null;
         const status: TakeStatus = selectedTake?.status ?? "pending";
         const videoSrc = selectedTake?.videoPath
-          ? `${mediaUrl(selectedTake.videoPath)}#t=0.5`
+          ? `${mediaUrl(slug, selectedTake.videoPath)}#t=0.5`
           : null;
 
         return (

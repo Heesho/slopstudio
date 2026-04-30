@@ -32,7 +32,7 @@ export default function EntityCard({
 }: Props) {
   const selectedTake = entity.takes.find((t) => t.jobId === entity.selectedTakeId) ?? null;
   const status: TakeStatus = selectedTake?.status ?? "pending";
-  const heroSrc = selectedTake?.imagePath ? mediaUrl(selectedTake.imagePath) : null;
+  const heroSrc = selectedTake?.imagePath ? mediaUrl(slug, selectedTake.imagePath) : null;
 
   const sceneQueryKey = entityType === "characters" ? "character" : "location";
 

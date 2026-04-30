@@ -1,14 +1,24 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { paths } from "@/lib/paths";
+import { projectPaths } from "@/lib/paths";
+import { assertSafeSlug } from "@/lib/studio";
 
-export async function GET(_req: Request, ctx: { params: Promise<{ path: string[] }> }) {
-  const { path: parts } = await ctx.params;
-  const fullPath = path.join(paths.mediaDir, ...parts);
+export async function GET(
+  _req: Request,
+  ctx: { params: Promise<{ slug: string; path: string[] }> },
+) {
+  const { slug, path: parts } = await ctx.params;
+  try {
+    assertSafeSlug(slug);
+  } catch {
+    return new Response("invalid slug", { status: 400 });
+  }
+  const mediaDir = projectPaths(slug).mediaDir;
+  const fullPath = path.join(mediaDir, ...parts);
 
   // Path traversal guard: ensure resolved path is still inside mediaDir
   const resolved = path.resolve(fullPath);
-  const mediaRoot = path.resolve(paths.mediaDir);
+  const mediaRoot = path.resolve(mediaDir);
   if (!resolved.startsWith(mediaRoot + path.sep) && resolved !== mediaRoot) {
     return new Response("forbidden", { status: 403 });
   }

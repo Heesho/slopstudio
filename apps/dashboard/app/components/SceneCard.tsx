@@ -42,7 +42,7 @@ export default function SceneCard({
   const selectedTake: VideoTake | null =
     scene.takes.find((t) => t.jobId === scene.selectedTakeId) ?? null;
   const status: TakeStatus = selectedTake?.status ?? "pending";
-  const heroSrc = selectedTake?.videoPath ? mediaUrl(selectedTake.videoPath) : null;
+  const heroSrc = selectedTake?.videoPath ? mediaUrl(slug, selectedTake.videoPath) : null;
 
   const episodeLabel =
     typeof episodeNumber === "number"

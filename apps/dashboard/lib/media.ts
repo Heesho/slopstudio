@@ -1,15 +1,14 @@
 /**
- * Convert a repo-root-relative media path (as stored in JSON) to a URL
- * the browser can request via the /media route handler.
+ * Convert a project-relative media path (as stored in JSON) to a URL
+ * the browser can request via the per-project /projects/<slug>/media route.
  *
- * Example: "media/characters/anomalocaris/abc.png" -> "/media/characters/anomalocaris/abc.png"
+ * Example: mediaUrl("cambrian-docuseries", "media/characters/foo/abc.png")
+ *   -> "/projects/cambrian-docuseries/media/characters/foo/abc.png"
  */
-export function mediaUrl(repoRelativePath: string): string {
-  // Defensive: strip a leading "media/" if present (it should be), normalize slashes
+export function mediaUrl(slug: string, repoRelativePath: string): string {
   const normalized = repoRelativePath.replace(/\\/g, "/").replace(/^\/+/, "");
-  if (normalized.startsWith("media/")) {
-    return `/${normalized}`;
-  }
-  // Fallback: assume the path is already inside media/
-  return `/media/${normalized}`;
+  const stripped = normalized.startsWith("media/")
+    ? normalized.slice("media/".length)
+    : normalized;
+  return `/projects/${slug}/media/${stripped}`;
 }

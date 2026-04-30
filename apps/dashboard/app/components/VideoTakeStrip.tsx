@@ -90,7 +90,7 @@ export default function VideoTakeStrip({
             >
               {thumbSrc ? (
                 <video
-                  src={`${mediaUrl(thumbSrc)}#t=0.5`}
+                  src={`${mediaUrl(slug, thumbSrc)}#t=0.5`}
                   muted
                   playsInline
                   preload="metadata"
