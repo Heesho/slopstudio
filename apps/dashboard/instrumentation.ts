@@ -13,16 +13,16 @@ export async function register() {
   const ROUTE_FOR_SEGMENT: Record<string, (slug: string) => string[]> = {
     "dna.json":    (s) => [`/projects/${s}/dna`],
     "_state.json": (s) => [
-      `/`,
+      "/",
       `/projects/${s}/dna`,
       `/projects/${s}/characters`,
       `/projects/${s}/locations`,
       `/projects/${s}/scenes`,
       `/projects/${s}/episodes`,
     ],
-    characters: (s) => [`/`, `/projects/${s}/characters`, `/projects/${s}/scenes`, `/projects/${s}/episodes`],
+    characters: (s) => ["/", `/projects/${s}/characters`, `/projects/${s}/scenes`, `/projects/${s}/episodes`],
     locations:  (s) => [`/projects/${s}/locations`, `/projects/${s}/scenes`, `/projects/${s}/episodes`],
-    scenes:     (s) => [`/`, `/projects/${s}/scenes`, `/projects/${s}/episodes`],
+    scenes:     (s) => ["/", `/projects/${s}/scenes`, `/projects/${s}/episodes`],
     episodes:   (s) => [`/projects/${s}/episodes`],
   };
 
