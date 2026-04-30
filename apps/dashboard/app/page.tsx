@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { listProjects } from "@/lib/projects";
 import { readStudioConfig } from "@/lib/studio";
 import { mediaUrl } from "@/lib/media";
+import ProjectCard from "@/app/components/ProjectCard";
 
 export default async function Home() {
   const studio = await readStudioConfig();
@@ -27,11 +27,7 @@ export default async function Home() {
         <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {projects.map((p) => (
             <li key={p.slug}>
-              <Link
-                href={`/projects/${p.slug}/dna`}
-                data-slug={p.slug}
-                className="block border border-neutral-800 rounded-lg overflow-hidden hover:border-neutral-600 transition-colors"
-              >
+              <ProjectCard slug={p.slug} href={`/projects/${p.slug}/dna`}>
                 <div className="aspect-video bg-neutral-900 flex items-center justify-center">
                   {p.thumbnailPath ? (
                     <img
@@ -49,7 +45,7 @@ export default async function Home() {
                     {p.charCount} char · {p.locCount} loc · {p.sceneCount} scene
                   </p>
                 </div>
-              </Link>
+              </ProjectCard>
             </li>
           ))}
         </ul>
