@@ -11,7 +11,7 @@ import {
 describe("schemas", () => {
   it("validates a minimal DNA file", () => {
     const valid = {
-      title: "Cambria",
+      title: "Test Show",
       concept: "test",
       stylePrompt: "style",
       narratorVoice: "voice",

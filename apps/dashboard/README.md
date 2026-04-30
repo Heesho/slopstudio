@@ -1,3 +1,3 @@
-# Cambria Dashboard
+# slopstudio Dashboard
 
-Next.js viewer for the Cambria monorepo. See [the repo root README](../../README.md) for setup and usage.
+Next.js viewer for the slopstudio monorepo. See [the repo root README](../../README.md) for setup and usage.
