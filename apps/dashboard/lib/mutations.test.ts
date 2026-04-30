@@ -416,3 +416,93 @@ describe("updateEntityField", () => {
     ).rejects.toBeInstanceOf(EntityValidationError);
   });
 });
+
+describe("selectTake / deleteTake on firstFrameTakes", () => {
+  let tmpRoot: string;
+  let mediaRoot: string;
+
+  beforeEach(async () => {
+    tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "cambria-ff-"));
+    mediaRoot = path.join(tmpRoot, "media");
+    await fs.mkdir(path.join(tmpRoot, "characters"), { recursive: true });
+    await fs.mkdir(path.join(tmpRoot, "scenes"), { recursive: true });
+    await fs.mkdir(path.join(mediaRoot, "scenes", "s1"), { recursive: true });
+    vi.spyOn(paths, "charactersDir", "get").mockReturnValue(path.join(tmpRoot, "characters"));
+    vi.spyOn(paths, "scenesDir", "get").mockReturnValue(path.join(tmpRoot, "scenes"));
+    vi.spyOn(paths, "mediaDir", "get").mockReturnValue(mediaRoot);
+  });
+
+  afterEach(async () => {
+    await fs.rm(tmpRoot, { recursive: true, force: true });
+    vi.restoreAllMocks();
+  });
+
+  it("selectTake updates firstFrameSelectedTakeId on a scene", async () => {
+    const id = "s1";
+    const jobId = "550e8400-e29b-41d4-a716-446655440000";
+    await fs.writeFile(path.join(tmpRoot, "scenes", `${id}.json`), JSON.stringify({
+      id, episodeId: "e1", order: 0, title: "T", prompt: "p", narration: "n",
+      characters: [], locations: [], duration: 6, videoModel: "v",
+      takes: [], selectedTakeId: null,
+      firstFramePrompt: "wide opening",
+      firstFrameTakes: [{
+        jobId, imagePath: "media/scenes/s1/firstframe-x.png",
+        status: "done", generatedAt: "2026-04-29T10:00:00Z",
+      }],
+      firstFrameSelectedTakeId: null,
+    }));
+    await selectTake("scenes", id, jobId, "firstFrameTakes");
+    const updated = JSON.parse(await fs.readFile(path.join(tmpRoot, "scenes", `${id}.json`), "utf-8"));
+    expect(updated.firstFrameSelectedTakeId).toBe(jobId);
+    expect(updated.selectedTakeId).toBeNull(); // unchanged
+  });
+
+  it("deleteTake removes a firstFrameTake and unlinks the file", async () => {
+    const id = "s1";
+    const jobId = "550e8400-e29b-41d4-a716-446655440000";
+    const filePath = `media/scenes/s1/firstframe-${jobId}.png`;
+    await fs.writeFile(path.join(mediaRoot, "scenes", id, `firstframe-${jobId}.png`), "fake-png");
+    await fs.writeFile(path.join(tmpRoot, "scenes", `${id}.json`), JSON.stringify({
+      id, episodeId: "e1", order: 0, title: "T", prompt: "p", narration: "n",
+      characters: [], locations: [], duration: 6, videoModel: "v",
+      takes: [], selectedTakeId: null,
+      firstFramePrompt: "wide opening",
+      firstFrameTakes: [{
+        jobId, imagePath: filePath, status: "done", generatedAt: "2026-04-29T10:00:00Z",
+      }],
+      firstFrameSelectedTakeId: jobId,
+    }));
+    await deleteTake("scenes", id, jobId, "firstFrameTakes");
+    const updated = JSON.parse(await fs.readFile(path.join(tmpRoot, "scenes", `${id}.json`), "utf-8"));
+    expect(updated.firstFrameTakes).toEqual([]);
+    expect(updated.firstFrameSelectedTakeId).toBeNull();
+    await expect(fs.access(path.join(mediaRoot, "scenes", id, `firstframe-${jobId}.png`))).rejects.toThrow();
+  });
+
+  it("rejects firstFrameTakes on a non-scene entity", async () => {
+    const id = "c1";
+    const jobId = "550e8400-e29b-41d4-a716-446655440000";
+    await fs.writeFile(path.join(tmpRoot, "characters", `${id}.json`), JSON.stringify({
+      id, name: "C", imagePrompt: "p", description: "d", imageModel: "m",
+      takes: [], selectedTakeId: null,
+    }));
+    await expect(
+      selectTake("characters", id, jobId, "firstFrameTakes"),
+    ).rejects.toBeInstanceOf(EntityValidationError);
+  });
+
+  it("does not affect the regular takes collection", async () => {
+    // Verify selectTake on default 'takes' collection still works post-refactor.
+    const id = "s1";
+    const jobId = "660e8400-e29b-41d4-a716-446655440000";
+    await fs.writeFile(path.join(tmpRoot, "scenes", `${id}.json`), JSON.stringify({
+      id, episodeId: "e1", order: 0, title: "T", prompt: "p", narration: "n",
+      characters: [], locations: [], duration: 6, videoModel: "v",
+      takes: [{ jobId, videoPath: "media/scenes/s1/video.mp4", status: "done", generatedAt: "..." }],
+      selectedTakeId: null,
+    }));
+    await selectTake("scenes", id, jobId); // default collection = "takes"
+    const updated = JSON.parse(await fs.readFile(path.join(tmpRoot, "scenes", `${id}.json`), "utf-8"));
+    expect(updated.selectedTakeId).toBe(jobId);
+  });
+});

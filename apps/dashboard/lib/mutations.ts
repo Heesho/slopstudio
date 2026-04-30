@@ -14,6 +14,13 @@ import { paths } from "./paths";
 export const ENTITY_TYPES = ["dna", "characters", "locations", "scenes", "episodes"] as const;
 export type EntityType = (typeof ENTITY_TYPES)[number];
 
+export type TakeCollection = "takes" | "firstFrameTakes";
+
+const SELECTED_KEY: Record<TakeCollection, string> = {
+  takes: "selectedTakeId",
+  firstFrameTakes: "firstFrameSelectedTakeId",
+};
+
 export class EntityValidationError extends Error {
   constructor(message: string) {
     super(message);
@@ -217,37 +224,71 @@ export async function updateEntityField(
 
 type TakeEntityType = Exclude<EntityType, "dna" | "episodes">;
 
-export async function selectTake(type: EntityType, id: string, jobId: string) {
+export async function selectTake(
+  type: EntityType,
+  id: string,
+  jobId: string,
+  collection: TakeCollection = "takes",
+) {
   if (type === "dna" || type === "episodes") {
     throw new EntityValidationError(`takes are not supported on ${type}`);
   }
+  if (collection === "firstFrameTakes" && type !== "scenes") {
+    throw new EntityValidationError(`firstFrameTakes only exist on scenes`);
+  }
   const takeType = type as TakeEntityType;
   const { file, data } = await readEntity(takeType, id);
-  if (!data.takes.some((t) => t.jobId === jobId)) {
-    throw new TakeNotFoundError(`take ${jobId} not found on ${type}/${id}`);
+  const list = (data as Record<string, unknown>)[collection] as
+    | Array<{ jobId: string }>
+    | undefined;
+  if (!list || !list.some((t) => t.jobId === jobId)) {
+    throw new TakeNotFoundError(
+      `take ${jobId} not found in ${collection} on ${type}/${id}`,
+    );
   }
-  await writeAtomic(file, { ...data, selectedTakeId: jobId });
+  await writeAtomic(file, { ...data, [SELECTED_KEY[collection]]: jobId });
 }
 
-export async function deleteTake(type: EntityType, id: string, jobId: string) {
+export async function deleteTake(
+  type: EntityType,
+  id: string,
+  jobId: string,
+  collection: TakeCollection = "takes",
+) {
   if (type === "dna" || type === "episodes") {
     throw new EntityValidationError(`takes are not supported on ${type}`);
   }
+  if (collection === "firstFrameTakes" && type !== "scenes") {
+    throw new EntityValidationError(`firstFrameTakes only exist on scenes`);
+  }
+
   const takeType = type as TakeEntityType;
   const { file, data } = await readEntity(takeType, id);
-  const take = data.takes.find((t) => t.jobId === jobId);
+  const list = (data as Record<string, unknown>)[collection] as
+    | Array<{
+        jobId: string;
+        imagePath?: string;
+        videoPath?: string;
+        status?: string;
+        generatedAt?: string;
+      }>
+    | undefined;
+
+  if (!list) {
+    throw new TakeNotFoundError(
+      `collection ${collection} missing on ${type}/${id}`,
+    );
+  }
+  const take = list.find((t) => t.jobId === jobId);
   if (!take) {
-    throw new TakeNotFoundError(`take ${jobId} not found on ${type}/${id}`);
+    throw new TakeNotFoundError(
+      `take ${jobId} not found in ${collection} on ${type}/${id}`,
+    );
   }
 
   // Resolve the on-disk file to unlink (imagePath for images, videoPath for video).
   // The path is repo-root-relative (e.g. "media/characters/foo/abc.png").
-  const filePath =
-    "imagePath" in take && typeof take.imagePath === "string"
-      ? take.imagePath
-      : "videoPath" in take && typeof take.videoPath === "string"
-        ? take.videoPath
-        : undefined;
+  const filePath = take.imagePath ?? take.videoPath;
 
   if (filePath) {
     // mediaDir is the absolute path to <repo>/media, so we need to strip the leading "media/" segment from the JSON-stored path.
@@ -267,14 +308,25 @@ export async function deleteTake(type: EntityType, id: string, jobId: string) {
     }
   }
 
-  const remaining = data.takes.filter((t) => t.jobId !== jobId);
-  let nextSelected: string | null = data.selectedTakeId;
-  if (data.selectedTakeId === jobId) {
+  const remaining = list.filter((t) => t.jobId !== jobId);
+  const selectedKey = SELECTED_KEY[collection];
+  const currentSelected = (data as Record<string, unknown>)[selectedKey] as
+    | string
+    | null;
+
+  let nextSelected: string | null = currentSelected;
+  if (currentSelected === jobId) {
     // Fall back to most recent `done` take; null if none.
     const candidates = remaining.filter((t) => t.status === "done");
-    candidates.sort((a, b) => (b.generatedAt ?? "").localeCompare(a.generatedAt ?? ""));
+    candidates.sort((a, b) =>
+      (b.generatedAt ?? "").localeCompare(a.generatedAt ?? ""),
+    );
     nextSelected = candidates[0]?.jobId ?? null;
   }
 
-  await writeAtomic(file, { ...data, takes: remaining, selectedTakeId: nextSelected });
+  await writeAtomic(file, {
+    ...data,
+    [collection]: remaining,
+    [selectedKey]: nextSelected,
+  });
 }
