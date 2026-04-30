@@ -16,15 +16,20 @@ function studioConfigPath(): string {
   return path.join(repoRoot(), "slopstudio.json");
 }
 
-export { StudioConfigSchema };
-export type { StudioConfig };
-
 export async function readStudioConfig(): Promise<StudioConfig> {
   try {
     const raw = await fs.readFile(studioConfigPath(), "utf-8");
     return StudioConfigSchema.parse(JSON.parse(raw));
-  } catch {
-    return { name: "slopstudio", activeProjectSlug: null };
+  } catch (err) {
+    if (
+      err &&
+      typeof err === "object" &&
+      "code" in err &&
+      (err as NodeJS.ErrnoException).code === "ENOENT"
+    ) {
+      return { name: "slopstudio", activeProjectSlug: null };
+    }
+    throw err;
   }
 }
 

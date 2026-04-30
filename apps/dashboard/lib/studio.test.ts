@@ -2,7 +2,8 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { readStudioConfig, writeActiveProjectSlug, StudioConfigSchema } from "./studio";
+import { assertSafeSlug, readStudioConfig, writeActiveProjectSlug } from "./studio";
+import { StudioConfigSchema } from "./schemas";
 import * as pathsModule from "./paths";
 
 describe("studio config", () => {
@@ -18,9 +19,11 @@ describe("studio config", () => {
     vi.restoreAllMocks();
   });
 
-  it("StudioConfigSchema parses a minimal config", () => {
-    expect(StudioConfigSchema.parse({ name: "X", activeProjectSlug: "y" }))
-      .toEqual({ name: "X", activeProjectSlug: "y" });
+  it("StudioConfigSchema applies defaults for empty input", () => {
+    expect(StudioConfigSchema.parse({})).toEqual({
+      name: "slopstudio",
+      activeProjectSlug: null,
+    });
   });
 
   it("readStudioConfig returns defaults when file missing", async () => {
@@ -41,6 +44,11 @@ describe("studio config", () => {
     });
   });
 
+  it("readStudioConfig throws on malformed JSON", async () => {
+    await fs.writeFile(path.join(tmpRoot, "slopstudio.json"), "{not json");
+    await expect(readStudioConfig()).rejects.toThrow();
+  });
+
   it("writeActiveProjectSlug updates only that field", async () => {
     await fs.writeFile(
       path.join(tmpRoot, "slopstudio.json"),
@@ -56,5 +64,22 @@ describe("studio config", () => {
   it("writeActiveProjectSlug rejects invalid slugs", async () => {
     await expect(writeActiveProjectSlug("../etc")).rejects.toThrow();
     await expect(writeActiveProjectSlug("HAS UPPER")).rejects.toThrow();
+  });
+});
+
+describe("assertSafeSlug", () => {
+  it("accepts valid slugs", () => {
+    expect(() => assertSafeSlug("a")).not.toThrow();
+    expect(() => assertSafeSlug("cambrian-docuseries")).not.toThrow();
+    expect(() => assertSafeSlug("a-b-c-1-2-3")).not.toThrow();
+    expect(() => assertSafeSlug("a".repeat(64))).not.toThrow();
+  });
+  it("rejects empty, too long, uppercase, and path-escape attempts", () => {
+    expect(() => assertSafeSlug("")).toThrow();
+    expect(() => assertSafeSlug("a".repeat(65))).toThrow();
+    expect(() => assertSafeSlug("HAS-UPPER")).toThrow();
+    expect(() => assertSafeSlug("..")).toThrow();
+    expect(() => assertSafeSlug("a/b")).toThrow();
+    expect(() => assertSafeSlug("a_b")).toThrow();
   });
 });
