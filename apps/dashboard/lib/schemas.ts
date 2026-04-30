@@ -3,6 +3,36 @@ import { z } from "zod";
 export const TakeStatus = z.enum(["pending", "generating", "done", "failed"]);
 export type TakeStatus = z.infer<typeof TakeStatus>;
 
+export const GenreSchema = z.enum([
+  "auto", "general", "action", "horror", "comedy", "noir", "drama", "epic",
+]);
+export type Genre = z.infer<typeof GenreSchema>;
+
+// Cinematic field set. "auto" is the sentinel meaning "skip in prompt /
+// let model decide". DNA gets defaults so missing seed fields parse cleanly.
+const cinematicDefaults = {
+  genre: GenreSchema.default("auto"),
+  colorPalette: z.string().default("auto"),
+  lighting: z.string().default("auto"),
+  cameraMoveset: z.string().default("auto"),
+  camera: z.string().default("auto"),
+  lens: z.string().default("auto"),
+  focalLength: z.string().default("auto"),
+  aperture: z.string().default("auto"),
+};
+
+// Same fields, but optional on Scene (Scene falls back to DNA when missing).
+const cinematicOverrides = {
+  genre: GenreSchema.optional(),
+  colorPalette: z.string().optional(),
+  lighting: z.string().optional(),
+  cameraMoveset: z.string().optional(),
+  camera: z.string().optional(),
+  lens: z.string().optional(),
+  focalLength: z.string().optional(),
+  aperture: z.string().optional(),
+};
+
 const ImageTake = z.object({
   jobId: z.string().uuid(),
   imagePath: z.string().optional(),
@@ -34,6 +64,7 @@ export const DnaSchema = z.object({
   locationImageModel: z.string(),
   locationRefAspectRatio: z.string(),
   locationRefTemplate: z.string(),
+  ...cinematicDefaults,
 });
 export type Dna = z.infer<typeof DnaSchema>;
 
@@ -71,6 +102,10 @@ export const SceneSchema = z.object({
   videoModel: z.string(),
   takes: z.array(VideoTake),
   selectedTakeId: z.string().uuid().nullable(),
+  ...cinematicOverrides,
+  firstFramePrompt: z.string().optional().default(""),
+  firstFrameTakes: z.array(ImageTake).default([]),
+  firstFrameSelectedTakeId: z.string().uuid().nullable().default(null),
 });
 export type Scene = z.infer<typeof SceneSchema>;
 

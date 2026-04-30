@@ -50,7 +50,7 @@ describe("content readers", () => {
       locationRefTemplate: "{imagePrompt}",
     };
     await fs.writeFile(path.join(tmpRoot, "dna.json"), JSON.stringify(dna));
-    expect(await readDna()).toEqual(dna);
+    expect(await readDna()).toMatchObject(dna);
   });
 
   it("readState returns empty defaults when file missing", async () => {

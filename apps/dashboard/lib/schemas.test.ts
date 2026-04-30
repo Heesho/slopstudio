@@ -24,7 +24,7 @@ describe("schemas", () => {
       locationRefAspectRatio: "16:9",
       locationRefTemplate: "loc {imagePrompt}",
     };
-    expect(DnaSchema.parse(valid)).toEqual(valid);
+    expect(DnaSchema.parse(valid)).toMatchObject(valid);
   });
 
   it("validates a character with takes", () => {
@@ -129,5 +129,92 @@ describe("schemas", () => {
   it("state recentJobs defaults to empty array if omitted", () => {
     const result = StateSchema.parse({ lastBalance: null, lastSyncAt: null });
     expect(result.recentJobs).toEqual([]);
+  });
+});
+
+describe("cinematic + first-frame additions", () => {
+  it("DNA defaults all cinematic fields to 'auto' when missing", () => {
+    const minimal = {
+      title: "X", concept: "Y", stylePrompt: "Z", narratorVoice: "N",
+      aspectRatio: "9:16", videoModel: "seedance_2_0",
+      characterImageModel: "nano_banana_2", characterRefAspectRatio: "16:9",
+      characterRefTemplate: "{imagePrompt}",
+      locationImageModel: "nano_banana_2", locationRefAspectRatio: "16:9",
+      locationRefTemplate: "{imagePrompt}",
+    };
+    const parsed = DnaSchema.parse(minimal);
+    expect(parsed.genre).toBe("auto");
+    expect(parsed.colorPalette).toBe("auto");
+    expect(parsed.aperture).toBe("auto");
+  });
+
+  it("DNA accepts a non-auto cinematic value", () => {
+    const minimal = {
+      title: "X", concept: "Y", stylePrompt: "Z", narratorVoice: "N",
+      aspectRatio: "9:16", videoModel: "seedance_2_0",
+      characterImageModel: "m", characterRefAspectRatio: "16:9", characterRefTemplate: "t",
+      locationImageModel: "m", locationRefAspectRatio: "16:9", locationRefTemplate: "t",
+      genre: "drama", focalLength: "85mm",
+    };
+    const parsed = DnaSchema.parse(minimal);
+    expect(parsed.genre).toBe("drama");
+    expect(parsed.focalLength).toBe("85mm");
+    expect(parsed.aperture).toBe("auto");
+  });
+
+  it("DNA rejects an invalid genre", () => {
+    const bad = {
+      title: "X", concept: "Y", stylePrompt: "Z", narratorVoice: "N",
+      aspectRatio: "9:16", videoModel: "v",
+      characterImageModel: "m", characterRefAspectRatio: "16:9", characterRefTemplate: "t",
+      locationImageModel: "m", locationRefAspectRatio: "16:9", locationRefTemplate: "t",
+      genre: "musical",
+    };
+    expect(() => DnaSchema.parse(bad)).toThrow();
+  });
+
+  it("Scene cinematic fields are all optional", () => {
+    const minimal = {
+      id: "s1", episodeId: "e1", order: 0, title: "T", prompt: "p", narration: "n",
+      characters: [], locations: [], duration: 6, videoModel: "v",
+      takes: [], selectedTakeId: null,
+    };
+    const parsed = SceneSchema.parse(minimal);
+    expect(parsed.genre).toBeUndefined();
+    expect(parsed.colorPalette).toBeUndefined();
+    expect(parsed.firstFramePrompt).toBe("");
+    expect(parsed.firstFrameTakes).toEqual([]);
+    expect(parsed.firstFrameSelectedTakeId).toBeNull();
+  });
+
+  it("Scene accepts cinematic overrides", () => {
+    const valid = {
+      id: "s1", episodeId: "e1", order: 0, title: "T", prompt: "p", narration: "n",
+      characters: [], locations: [], duration: 6, videoModel: "v",
+      takes: [], selectedTakeId: null,
+      genre: "noir", focalLength: "35mm",
+    };
+    const parsed = SceneSchema.parse(valid);
+    expect(parsed.genre).toBe("noir");
+    expect(parsed.focalLength).toBe("35mm");
+  });
+
+  it("Scene accepts a first-frame take", () => {
+    const valid = {
+      id: "s1", episodeId: "e1", order: 0, title: "T", prompt: "p", narration: "n",
+      characters: [], locations: [], duration: 6, videoModel: "v",
+      takes: [], selectedTakeId: null,
+      firstFramePrompt: "wide opening shot",
+      firstFrameTakes: [{
+        jobId: "550e8400-e29b-41d4-a716-446655440000",
+        imagePath: "media/scenes/s1/firstframe-x.png",
+        status: "done",
+        generatedAt: "2026-04-29T10:00:00Z",
+      }],
+      firstFrameSelectedTakeId: "550e8400-e29b-41d4-a716-446655440000",
+    };
+    const parsed = SceneSchema.parse(valid);
+    expect(parsed.firstFrameTakes).toHaveLength(1);
+    expect(parsed.firstFrameSelectedTakeId).toBe("550e8400-e29b-41d4-a716-446655440000");
   });
 });
