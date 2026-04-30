@@ -1,6 +1,11 @@
 import EmptyState from "@/app/components/EmptyState";
 import SceneCard from "@/app/components/SceneCard";
-import { readAllEpisodes, readAllScenes } from "@/lib/content";
+import {
+  readAllCharacters,
+  readAllEpisodes,
+  readAllLocations,
+  readAllScenes,
+} from "@/lib/content";
 import type { Episode } from "@/lib/schemas";
 
 type SearchParams = Promise<{
@@ -12,7 +17,12 @@ type SearchParams = Promise<{
 
 export default async function ScenesPage(props: { searchParams: SearchParams }) {
   const params = await props.searchParams;
-  const [scenes, episodes] = await Promise.all([readAllScenes(), readAllEpisodes()]);
+  const [scenes, episodes, characters, locations] = await Promise.all([
+    readAllScenes(),
+    readAllEpisodes(),
+    readAllCharacters(),
+    readAllLocations(),
+  ]);
 
   if (scenes.length === 0) {
     return (
@@ -28,6 +38,8 @@ export default async function ScenesPage(props: { searchParams: SearchParams }) 
   }
 
   const episodeMap = new Map(episodes.map((e) => [e.id, e]));
+  const availableCharacters = characters.map((c) => ({ id: c.id, label: c.name }));
+  const availableLocations = locations.map((l) => ({ id: l.id, label: l.name }));
 
   // Apply filters
   let filtered = scenes;
@@ -90,6 +102,8 @@ export default async function ScenesPage(props: { searchParams: SearchParams }) 
               scene={s}
               episodeNumber={ep?.number}
               episodeTitle={ep?.title}
+              availableCharacters={availableCharacters}
+              availableLocations={availableLocations}
             />
           );
         })}

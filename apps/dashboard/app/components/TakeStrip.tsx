@@ -12,6 +12,7 @@ type Props = {
   entityId: string;
   takes: ImageTake[];
   selectedTakeId: string | null;
+  collection?: "takes" | "firstFrameTakes";
 };
 
 export default function TakeStrip({
@@ -19,10 +20,22 @@ export default function TakeStrip({
   entityId,
   takes,
   selectedTakeId,
+  collection = "takes",
 }: Props) {
   const router = useRouter();
   const [busyJobId, setBusyJobId] = useState<string | null>(null);
   const [errorByJob, setErrorByJob] = useState<Record<string, string>>({});
+
+  // URL switch: default routes hit select-take / take/[jobId]; firstFrameTakes
+  // hits the parallel select-first-frame / first-frame/[jobId] routes (Task 6).
+  const selectUrl =
+    collection === "firstFrameTakes"
+      ? `/api/entity/${entityType}/${entityId}/select-first-frame`
+      : `/api/entity/${entityType}/${entityId}/select-take`;
+  const deleteUrlFor = (jobId: string) =>
+    collection === "firstFrameTakes"
+      ? `/api/entity/${entityType}/${entityId}/first-frame/${jobId}`
+      : `/api/entity/${entityType}/${entityId}/take/${jobId}`;
 
   if (takes.length === 0) {
     return (
@@ -34,7 +47,7 @@ export default function TakeStrip({
     setBusyJobId(jobId);
     setErrorByJob((e) => ({ ...e, [jobId]: "" }));
     try {
-      const res = await fetch(`/api/entity/${entityType}/${entityId}/select-take`, {
+      const res = await fetch(selectUrl, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ jobId }),
@@ -55,7 +68,7 @@ export default function TakeStrip({
     setBusyJobId(jobId);
     setErrorByJob((e) => ({ ...e, [jobId]: "" }));
     try {
-      const res = await fetch(`/api/entity/${entityType}/${entityId}/take/${jobId}`, {
+      const res = await fetch(deleteUrlFor(jobId), {
         method: "DELETE",
       });
       if (!res.ok) throw new Error(`delete failed (${res.status})`);
