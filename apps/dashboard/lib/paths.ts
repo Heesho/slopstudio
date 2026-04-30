@@ -1,30 +1,32 @@
 import path from "node:path";
 
-const REPO_ROOT = path.resolve(process.cwd(), "../..");
+export function repoRoot(): string {
+  return path.resolve(process.cwd(), "../..");
+}
 
 export const paths = {
   get contentDir() {
-    return path.join(REPO_ROOT, "content");
+    return path.join(repoRoot(), "content");
   },
   get mediaDir() {
-    return path.join(REPO_ROOT, "media");
+    return path.join(repoRoot(), "media");
   },
   get dna() {
-    return path.join(REPO_ROOT, "content/dna.json");
+    return path.join(repoRoot(), "content/dna.json");
   },
   get state() {
-    return path.join(REPO_ROOT, "content/_state.json");
+    return path.join(repoRoot(), "content/_state.json");
   },
   get charactersDir() {
-    return path.join(REPO_ROOT, "content/characters");
+    return path.join(repoRoot(), "content/characters");
   },
   get locationsDir() {
-    return path.join(REPO_ROOT, "content/locations");
+    return path.join(repoRoot(), "content/locations");
   },
   get scenesDir() {
-    return path.join(REPO_ROOT, "content/scenes");
+    return path.join(repoRoot(), "content/scenes");
   },
   get episodesDir() {
-    return path.join(REPO_ROOT, "content/episodes");
+    return path.join(repoRoot(), "content/episodes");
   },
 };

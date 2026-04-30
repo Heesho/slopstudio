@@ -133,3 +133,9 @@ export const StateSchema = z.object({
     .default([]),
 });
 export type State = z.infer<typeof StateSchema>;
+
+export const StudioConfigSchema = z.object({
+  name: z.string().default("slopstudio"),
+  activeProjectSlug: z.string().nullable().default(null),
+});
+export type StudioConfig = z.infer<typeof StudioConfigSchema>;
