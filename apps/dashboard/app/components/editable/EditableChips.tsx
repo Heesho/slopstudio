@@ -7,6 +7,7 @@ import { useFieldUpdate, type EntityType } from "./useFieldUpdate";
 type Option = { id: string; label: string };
 
 export default function EditableChips({
+  slug,
   type,
   id,
   field,
@@ -14,6 +15,7 @@ export default function EditableChips({
   options,
   chipHref,
 }: {
+  slug: string;
   type: EntityType;
   id: string;
   field: string;
@@ -24,7 +26,7 @@ export default function EditableChips({
   chipHref?: string;
 }) {
   const [adding, setAdding] = useState(false);
-  const { save, busy, error } = useFieldUpdate(type, id, field);
+  const { save, busy, error } = useFieldUpdate(slug, type, id, field);
 
   const remove = async (chipId: string) => {
     try {

@@ -33,8 +33,16 @@ function buildSummary(scenes: Scene[]): string {
   return parts.join(" · ");
 }
 
-export default async function EpisodesPage() {
-  const [episodes, scenes] = await Promise.all([readAllEpisodes(), readAllScenes()]);
+export default async function EpisodesPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const [episodes, scenes] = await Promise.all([
+    readAllEpisodes(slug),
+    readAllScenes(slug),
+  ]);
 
   if (episodes.length === 0) {
     return (
@@ -68,6 +76,7 @@ export default async function EpisodesPage() {
             <div className="flex items-start justify-between gap-3 mb-1">
               <div className="flex-1 min-w-0">
                 <EditableText
+                  slug={slug}
                   type="episodes"
                   id={episode.id}
                   field="title"
@@ -81,6 +90,7 @@ export default async function EpisodesPage() {
             </div>
             <div className="text-neutral-400 italic mt-1">
               <EditableTextArea
+                slug={slug}
                 type="episodes"
                 id={episode.id}
                 field="hook"
@@ -92,7 +102,7 @@ export default async function EpisodesPage() {
               <p className="text-xs text-neutral-500 mt-2 mb-4">{summary}</p>
             )}
             {!summary && <div className="mb-4" />}
-            <StoryboardStrip scenes={epScenes} episodeId={episode.id} />
+            <StoryboardStrip slug={slug} scenes={epScenes} episodeId={episode.id} />
           </section>
         );
       })}

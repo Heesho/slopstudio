@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { useFieldUpdate, type EntityType } from "./useFieldUpdate";
 
 export default function EditableTextArea({
+  slug,
   type,
   id,
   field,
@@ -11,6 +12,7 @@ export default function EditableTextArea({
   className = "",
   rows = 3,
 }: {
+  slug: string;
   type: EntityType;
   id: string;
   field: string;
@@ -21,7 +23,7 @@ export default function EditableTextArea({
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
-  const { save, busy, error } = useFieldUpdate(type, id, field);
+  const { save, busy, error } = useFieldUpdate(slug, type, id, field);
   const ref = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {

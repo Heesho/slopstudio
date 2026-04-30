@@ -8,12 +8,14 @@ import { mediaUrl } from "@/lib/media";
 import StatusChip from "./StatusChip";
 
 type Props = {
+  slug: string;
   entityId: string;
   takes: VideoTake[];
   selectedTakeId: string | null;
 };
 
 export default function VideoTakeStrip({
+  slug,
   entityId,
   takes,
   selectedTakeId,
@@ -30,11 +32,14 @@ export default function VideoTakeStrip({
     setBusyJobId(jobId);
     setErrorByJob((e) => ({ ...e, [jobId]: "" }));
     try {
-      const res = await fetch(`/api/entity/scenes/${entityId}/select-take`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ jobId }),
-      });
+      const res = await fetch(
+        `/api/projects/${slug}/entity/scenes/${entityId}/select-take`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ jobId }),
+        },
+      );
       if (!res.ok) throw new Error(`select failed (${res.status})`);
       router.refresh();
     } catch (err) {
@@ -51,9 +56,12 @@ export default function VideoTakeStrip({
     setBusyJobId(jobId);
     setErrorByJob((e) => ({ ...e, [jobId]: "" }));
     try {
-      const res = await fetch(`/api/entity/scenes/${entityId}/take/${jobId}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(
+        `/api/projects/${slug}/entity/scenes/${entityId}/take/${jobId}`,
+        {
+          method: "DELETE",
+        },
+      );
       if (!res.ok) throw new Error(`delete failed (${res.status})`);
       router.refresh();
     } catch (err) {

@@ -2,8 +2,16 @@ import EntityCard from "@/app/components/EntityCard";
 import EmptyState from "@/app/components/EmptyState";
 import { readAllCharacters, readAllScenes } from "@/lib/content";
 
-export default async function CharactersPage() {
-  const [characters, scenes] = await Promise.all([readAllCharacters(), readAllScenes()]);
+export default async function CharactersPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const [characters, scenes] = await Promise.all([
+    readAllCharacters(slug),
+    readAllScenes(slug),
+  ]);
   if (characters.length === 0) {
     return (
       <EmptyState
@@ -24,6 +32,7 @@ export default async function CharactersPage() {
         {characters.map((c) => (
           <EntityCard
             key={c.id}
+            slug={slug}
             entity={c}
             entityType="characters"
             prompt={c.imagePrompt}

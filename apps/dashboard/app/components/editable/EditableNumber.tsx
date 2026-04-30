@@ -3,12 +3,14 @@ import { useState, useRef, useEffect } from "react";
 import { useFieldUpdate, type EntityType } from "./useFieldUpdate";
 
 export default function EditableNumber({
+  slug,
   type,
   id,
   field,
   value,
   className = "",
 }: {
+  slug: string;
   type: EntityType;
   id: string;
   field: string;
@@ -18,7 +20,7 @@ export default function EditableNumber({
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(String(value));
   const [localError, setLocalError] = useState<string | null>(null);
-  const { save, busy, error } = useFieldUpdate(type, id, field);
+  const { save, busy, error } = useFieldUpdate(slug, type, id, field);
   const ref = useRef<HTMLInputElement>(null);
 
   useEffect(() => {

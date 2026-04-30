@@ -1,4 +1,4 @@
-import EmptyState from "../components/EmptyState";
+import EmptyState from "@/app/components/EmptyState";
 import EditableSelect from "@/app/components/editable/EditableSelect";
 import EditableText from "@/app/components/editable/EditableText";
 import EditableTextArea from "@/app/components/editable/EditableTextArea";
@@ -26,10 +26,15 @@ const CINEMATIC_TEXT_FIELDS: Array<readonly [string, string]> = [
   ["aperture", "Aperture"],
 ];
 
-export default async function DnaPage() {
+export default async function DnaPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
   let dna: Dna;
   try {
-    dna = await readDna();
+    dna = await readDna(slug);
   } catch {
     return (
       <EmptyState
@@ -49,6 +54,7 @@ export default async function DnaPage() {
     <div className="flex flex-col gap-8">
       <header>
         <EditableText
+          slug={slug}
           type="dna"
           id="_"
           field="title"
@@ -56,7 +62,13 @@ export default async function DnaPage() {
           className="text-2xl font-semibold"
         />
         <div className="mt-2 text-sm text-neutral-400">
-          <EditableTextArea type="dna" id="_" field="concept" value={dna.concept} />
+          <EditableTextArea
+            slug={slug}
+            type="dna"
+            id="_"
+            field="concept"
+            value={dna.concept}
+          />
         </div>
       </header>
 
@@ -64,6 +76,7 @@ export default async function DnaPage() {
         <h2 className="text-xs uppercase tracking-wider text-neutral-400">Style prompt</h2>
         <div className="mt-3 font-mono text-sm leading-relaxed text-neutral-100">
           <EditableTextArea
+            slug={slug}
             type="dna"
             id="_"
             field="stylePrompt"
@@ -80,6 +93,7 @@ export default async function DnaPage() {
             <dt className="text-xs uppercase tracking-wider text-neutral-400">Aspect Ratio</dt>
             <dd className="mt-1">
               <EditableText
+                slug={slug}
                 type="dna"
                 id="_"
                 field="aspectRatio"
@@ -92,6 +106,7 @@ export default async function DnaPage() {
             <dt className="text-xs uppercase tracking-wider text-neutral-400">Video Model</dt>
             <dd className="mt-1">
               <EditableText
+                slug={slug}
                 type="dna"
                 id="_"
                 field="videoModel"
@@ -104,6 +119,7 @@ export default async function DnaPage() {
             <dt className="text-xs uppercase tracking-wider text-neutral-400">Narrator Voice</dt>
             <dd className="mt-1 text-sm text-neutral-100">
               <EditableTextArea
+                slug={slug}
                 type="dna"
                 id="_"
                 field="narratorVoice"
@@ -117,6 +133,7 @@ export default async function DnaPage() {
             </dt>
             <dd className="mt-1">
               <EditableText
+                slug={slug}
                 type="dna"
                 id="_"
                 field="characterImageModel"
@@ -131,6 +148,7 @@ export default async function DnaPage() {
             </dt>
             <dd className="mt-1">
               <EditableText
+                slug={slug}
                 type="dna"
                 id="_"
                 field="characterRefAspectRatio"
@@ -145,6 +163,7 @@ export default async function DnaPage() {
             </dt>
             <dd className="mt-1">
               <EditableText
+                slug={slug}
                 type="dna"
                 id="_"
                 field="locationImageModel"
@@ -159,6 +178,7 @@ export default async function DnaPage() {
             </dt>
             <dd className="mt-1">
               <EditableText
+                slug={slug}
                 type="dna"
                 id="_"
                 field="locationRefAspectRatio"
@@ -177,6 +197,7 @@ export default async function DnaPage() {
           </h2>
           <div className="mt-3 font-mono text-sm text-neutral-200">
             <EditableTextArea
+              slug={slug}
               type="dna"
               id="_"
               field="characterRefTemplate"
@@ -191,6 +212,7 @@ export default async function DnaPage() {
           </h2>
           <div className="mt-3 font-mono text-sm text-neutral-200">
             <EditableTextArea
+              slug={slug}
               type="dna"
               id="_"
               field="locationRefTemplate"
@@ -208,6 +230,7 @@ export default async function DnaPage() {
             <dt className="text-neutral-500 mb-1">Genre</dt>
             <dd>
               <EditableSelect
+                slug={slug}
                 type="dna"
                 id="_"
                 field="genre"
@@ -221,6 +244,7 @@ export default async function DnaPage() {
               <dt className="text-neutral-500 mb-1">{label}</dt>
               <dd>
                 <EditableText
+                  slug={slug}
                   type="dna"
                   id="_"
                   field={field}

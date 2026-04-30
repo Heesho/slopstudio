@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useFieldUpdate, type EntityType } from "./useFieldUpdate";
 
 export default function EditableSelect({
+  slug,
   type,
   id,
   field,
@@ -10,6 +11,7 @@ export default function EditableSelect({
   options,
   className = "",
 }: {
+  slug: string;
   type: EntityType;
   id: string;
   field: string;
@@ -17,7 +19,7 @@ export default function EditableSelect({
   options: { value: string; label: string }[];
   className?: string;
 }) {
-  const { save, busy, error } = useFieldUpdate(type, id, field);
+  const { save, busy, error } = useFieldUpdate(slug, type, id, field);
   const [draft, setDraft] = useState(value);
 
   // Mirror upstream value into draft on prop change (e.g. after router.refresh).

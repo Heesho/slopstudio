@@ -2,8 +2,16 @@ import EntityCard from "@/app/components/EntityCard";
 import EmptyState from "@/app/components/EmptyState";
 import { readAllLocations, readAllScenes } from "@/lib/content";
 
-export default async function LocationsPage() {
-  const [locations, scenes] = await Promise.all([readAllLocations(), readAllScenes()]);
+export default async function LocationsPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const [locations, scenes] = await Promise.all([
+    readAllLocations(slug),
+    readAllScenes(slug),
+  ]);
   if (locations.length === 0) {
     return (
       <EmptyState
@@ -28,6 +36,7 @@ export default async function LocationsPage() {
         {locations.map((l) => (
           <EntityCard
             key={l.id}
+            slug={slug}
             entity={l}
             entityType="locations"
             prompt={l.imagePrompt}

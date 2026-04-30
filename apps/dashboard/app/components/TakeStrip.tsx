@@ -8,6 +8,7 @@ import { mediaUrl } from "@/lib/media";
 import StatusChip from "./StatusChip";
 
 type Props = {
+  slug: string;
   entityType: "characters" | "locations" | "scenes";
   entityId: string;
   takes: ImageTake[];
@@ -16,6 +17,7 @@ type Props = {
 };
 
 export default function TakeStrip({
+  slug,
   entityType,
   entityId,
   takes,
@@ -30,12 +32,12 @@ export default function TakeStrip({
   // hits the parallel select-first-frame / first-frame/[jobId] routes (Task 6).
   const selectUrl =
     collection === "firstFrameTakes"
-      ? `/api/entity/${entityType}/${entityId}/select-first-frame`
-      : `/api/entity/${entityType}/${entityId}/select-take`;
+      ? `/api/projects/${slug}/entity/${entityType}/${entityId}/select-first-frame`
+      : `/api/projects/${slug}/entity/${entityType}/${entityId}/select-take`;
   const deleteUrlFor = (jobId: string) =>
     collection === "firstFrameTakes"
-      ? `/api/entity/${entityType}/${entityId}/first-frame/${jobId}`
-      : `/api/entity/${entityType}/${entityId}/take/${jobId}`;
+      ? `/api/projects/${slug}/entity/${entityType}/${entityId}/first-frame/${jobId}`
+      : `/api/projects/${slug}/entity/${entityType}/${entityId}/take/${jobId}`;
 
   if (takes.length === 0) {
     return (

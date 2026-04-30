@@ -23,7 +23,13 @@ const CINEMATIC_TEXT_FIELDS: Array<readonly [keyof Scene, string]> = [
   ["aperture", "Aperture"],
 ];
 
-export default function SceneCinematics({ scene }: { scene: Scene }) {
+export default function SceneCinematics({
+  slug,
+  scene,
+}: {
+  slug: string;
+  scene: Scene;
+}) {
   return (
     <details className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-4">
       <summary className="cursor-pointer text-xs uppercase tracking-wider text-neutral-400 select-none">
@@ -36,6 +42,7 @@ export default function SceneCinematics({ scene }: { scene: Scene }) {
           </dt>
           <dd>
             <EditableSelect
+              slug={slug}
               type="scenes"
               id={scene.id}
               field="genre"
@@ -54,6 +61,7 @@ export default function SceneCinematics({ scene }: { scene: Scene }) {
               </dt>
               <dd>
                 <EditableText
+                  slug={slug}
                   type="scenes"
                   id={scene.id}
                   field={String(field)}

@@ -15,13 +15,17 @@ type SearchParams = Promise<{
   location?: string;
 }>;
 
-export default async function ScenesPage(props: { searchParams: SearchParams }) {
+export default async function ScenesPage(props: {
+  params: Promise<{ slug: string }>;
+  searchParams: SearchParams;
+}) {
+  const { slug } = await props.params;
   const params = await props.searchParams;
   const [scenes, episodes, characters, locations] = await Promise.all([
-    readAllScenes(),
-    readAllEpisodes(),
-    readAllCharacters(),
-    readAllLocations(),
+    readAllScenes(slug),
+    readAllEpisodes(slug),
+    readAllCharacters(slug),
+    readAllLocations(slug),
   ]);
 
   if (scenes.length === 0) {
@@ -87,18 +91,19 @@ export default async function ScenesPage(props: { searchParams: SearchParams }) 
             </span>
           )}
           {" · "}
-          <a href="/scenes" className="hover:text-neutral-200">
+          <a href={`/projects/${slug}/scenes`} className="hover:text-neutral-200">
             remove
           </a>
         </div>
       )}
-      <FilterBar episodes={episodes} current={params} />
+      <FilterBar slug={slug} episodes={episodes} current={params} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {filtered.map((s) => {
           const ep = episodeMap.get(s.episodeId);
           return (
             <SceneCard
               key={s.id}
+              slug={slug}
               scene={s}
               episodeNumber={ep?.number}
               episodeTitle={ep?.title}
@@ -118,9 +123,11 @@ export default async function ScenesPage(props: { searchParams: SearchParams }) 
 }
 
 function FilterBar({
+  slug,
   episodes,
   current,
 }: {
+  slug: string;
   episodes: Episode[];
   current: { episode?: string; status?: string; character?: string; location?: string };
 }) {
@@ -165,7 +172,10 @@ function FilterBar({
       >
         Apply
       </button>
-      <a href="/scenes" className="text-neutral-400 hover:text-neutral-200">
+      <a
+        href={`/projects/${slug}/scenes`}
+        className="text-neutral-400 hover:text-neutral-200"
+      >
         Clear
       </a>
     </form>

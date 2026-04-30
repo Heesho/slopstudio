@@ -1,14 +1,6 @@
 import Link from "next/link";
 import type { State } from "@/lib/schemas";
 
-const TABS = [
-  { href: "/dna", label: "DNA" },
-  { href: "/characters", label: "Characters" },
-  { href: "/locations", label: "Locations" },
-  { href: "/scenes", label: "Scenes" },
-  { href: "/episodes", label: "Episodes" },
-];
-
 function timeAgo(iso: string | null): string {
   if (!iso) return "never";
   const ms = Date.now() - Date.parse(iso);
@@ -22,15 +14,38 @@ function timeAgo(iso: string | null): string {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-export default function Header({ title, state }: { title: string; state: State }) {
+export default function Header({
+  title,
+  state,
+  slug,
+}: {
+  title: string;
+  state: State;
+  slug: string;
+}) {
+  const tabs = [
+    { href: `/projects/${slug}/dna`, label: "DNA" },
+    { href: `/projects/${slug}/characters`, label: "Characters" },
+    { href: `/projects/${slug}/locations`, label: "Locations" },
+    { href: `/projects/${slug}/scenes`, label: "Scenes" },
+    { href: `/projects/${slug}/episodes`, label: "Episodes" },
+  ];
   return (
     <header className="border-b border-neutral-800 bg-neutral-950/80 backdrop-blur sticky top-0 z-10">
       <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-6">
-        <p className="font-mono text-sm tracking-wide text-neutral-300 truncate">
-          {title}
-        </p>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/"
+            className="text-xs text-neutral-500 hover:text-neutral-300 font-mono"
+          >
+            ←
+          </Link>
+          <p className="font-mono text-sm tracking-wide text-neutral-300 truncate">
+            {title}
+          </p>
+        </div>
         <nav className="flex gap-6">
-          {TABS.map((t) => (
+          {tabs.map((t) => (
             <Link
               key={t.href}
               href={t.href}

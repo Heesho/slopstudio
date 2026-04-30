@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { useFieldUpdate, type EntityType } from "./useFieldUpdate";
 
 export default function EditableText({
+  slug,
   type,
   id,
   field,
@@ -10,6 +11,7 @@ export default function EditableText({
   placeholder,
   className = "",
 }: {
+  slug: string;
   type: EntityType;
   id: string;
   field: string;
@@ -19,7 +21,7 @@ export default function EditableText({
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
-  const { save, busy, error } = useFieldUpdate(type, id, field);
+  const { save, busy, error } = useFieldUpdate(slug, type, id, field);
   const ref = useRef<HTMLInputElement>(null);
 
   useEffect(() => {

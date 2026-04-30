@@ -14,6 +14,7 @@ type Entity = {
 };
 
 type Props = {
+  slug: string;
   entity: Entity;
   entityType: "characters" | "locations";
   prompt: string;
@@ -22,6 +23,7 @@ type Props = {
 };
 
 export default function EntityCard({
+  slug,
   entity,
   entityType,
   prompt,
@@ -53,6 +55,7 @@ export default function EntityCard({
         <div className="flex items-center justify-between gap-3">
           <div className="flex-1 min-w-0">
             <EditableText
+              slug={slug}
               type={entityType}
               id={entity.id}
               field="name"
@@ -67,6 +70,7 @@ export default function EntityCard({
           <p className="text-xs uppercase tracking-wider text-neutral-400">Image prompt</p>
           <div className="mt-1 text-sm text-neutral-300">
             <EditableTextArea
+              slug={slug}
               type={entityType}
               id={entity.id}
               field="imagePrompt"
@@ -81,6 +85,7 @@ export default function EntityCard({
             <p className="text-xs uppercase tracking-wider text-neutral-400">Description</p>
             <div className="mt-1 text-sm text-neutral-300">
               <EditableTextArea
+                slug={slug}
                 type={entityType}
                 id={entity.id}
                 field="description"
@@ -94,6 +99,7 @@ export default function EntityCard({
         <div>
           <p className="text-xs uppercase tracking-wider text-neutral-400 mb-2">Takes</p>
           <TakeStrip
+            slug={slug}
             entityType={entityType}
             entityId={entity.id}
             takes={entity.takes}
@@ -103,7 +109,7 @@ export default function EntityCard({
 
         {typeof appearsInScenes === "number" && appearsInScenes > 0 && (
           <Link
-            href={`/scenes?${sceneQueryKey}=${entity.id}`}
+            href={`/projects/${slug}/scenes?${sceneQueryKey}=${entity.id}`}
             className="block text-xs text-neutral-500 hover:text-neutral-300 transition-colors"
           >
             Appears in {appearsInScenes} {appearsInScenes === 1 ? "scene" : "scenes"} →

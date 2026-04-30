@@ -2,7 +2,13 @@ import EditableTextArea from "./editable/EditableTextArea";
 import TakeStrip from "./TakeStrip";
 import type { Scene } from "@/lib/schemas";
 
-export default function FirstFrameSection({ scene }: { scene: Scene }) {
+export default function FirstFrameSection({
+  slug,
+  scene,
+}: {
+  slug: string;
+  scene: Scene;
+}) {
   const isOpen = scene.firstFrameTakes.length > 0;
   return (
     <details
@@ -20,6 +26,7 @@ export default function FirstFrameSection({ scene }: { scene: Scene }) {
             Prompt (optional — locks composition before video gen)
           </p>
           <EditableTextArea
+            slug={slug}
             type="scenes"
             id={scene.id}
             field="firstFramePrompt"
@@ -30,6 +37,7 @@ export default function FirstFrameSection({ scene }: { scene: Scene }) {
         </div>
         {scene.firstFrameTakes.length > 0 && (
           <TakeStrip
+            slug={slug}
             entityType="scenes"
             entityId={scene.id}
             takes={scene.firstFrameTakes}

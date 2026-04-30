@@ -4,11 +4,12 @@ import { mediaUrl } from "@/lib/media";
 import StatusChip from "./StatusChip";
 
 type Props = {
+  slug: string;
   scenes: Scene[];
   episodeId: string;
 };
 
-export default function StoryboardStrip({ scenes, episodeId }: Props) {
+export default function StoryboardStrip({ slug, scenes, episodeId }: Props) {
   if (scenes.length === 0) {
     return <p className="text-sm text-neutral-500 italic">No scenes yet.</p>;
   }
@@ -30,7 +31,7 @@ export default function StoryboardStrip({ scenes, episodeId }: Props) {
         return (
           <Link
             key={scene.id}
-            href={`/scenes?episode=${episodeId}#scene-${scene.id}`}
+            href={`/projects/${slug}/scenes?episode=${episodeId}#scene-${scene.id}`}
             className="flex-shrink-0 w-32 group"
           >
             <div className="w-32 aspect-[9/16] rounded overflow-hidden bg-neutral-900 ring-1 ring-neutral-800 group-hover:ring-neutral-600 transition-colors">

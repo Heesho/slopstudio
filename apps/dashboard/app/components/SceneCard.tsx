@@ -10,6 +10,7 @@ import StatusChip from "./StatusChip";
 import VideoTakeStrip from "./VideoTakeStrip";
 
 type Props = {
+  slug: string;
   scene: Scene;
   episodeNumber?: number;
   episodeTitle?: string;
@@ -31,6 +32,7 @@ function formatDate(iso: string | undefined): string {
 }
 
 export default function SceneCard({
+  slug,
   scene,
   episodeNumber,
   episodeTitle,
@@ -57,6 +59,7 @@ export default function SceneCard({
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <EditableText
+              slug={slug}
               type="scenes"
               id={scene.id}
               field="title"
@@ -77,7 +80,7 @@ export default function SceneCard({
 
         {/* First Frame section — appears above the hero so users can lock
             composition before the video take strip dominates the layout. */}
-        <FirstFrameSection scene={scene} />
+        <FirstFrameSection slug={slug} scene={scene} />
       </div>
 
       {/* Hero video — constrained to a sensible width so 9:16 doesn't dominate */}
@@ -113,6 +116,7 @@ export default function SceneCard({
         <div>
           <p className="text-xs uppercase tracking-wider text-neutral-400 mb-2">Takes</p>
           <VideoTakeStrip
+            slug={slug}
             entityId={scene.id}
             takes={scene.takes}
             selectedTakeId={scene.selectedTakeId}
@@ -126,6 +130,7 @@ export default function SceneCard({
           </summary>
           <div className="mt-2 text-sm text-neutral-300">
             <EditableTextArea
+              slug={slug}
               type="scenes"
               id={scene.id}
               field="prompt"
@@ -140,6 +145,7 @@ export default function SceneCard({
           <p className="text-xs uppercase tracking-wider text-neutral-400">Narration</p>
           <div className="mt-1 italic text-neutral-200">
             <EditableTextArea
+              slug={slug}
               type="scenes"
               id={scene.id}
               field="narration"
@@ -155,12 +161,13 @@ export default function SceneCard({
             Characters:
           </span>
           <EditableChips
+            slug={slug}
             type="scenes"
             id={scene.id}
             field="characters"
             value={scene.characters}
             options={availableCharacters}
-            chipHref="/characters"
+            chipHref={`/projects/${slug}/characters`}
           />
         </div>
 
@@ -169,17 +176,18 @@ export default function SceneCard({
             Locations:
           </span>
           <EditableChips
+            slug={slug}
             type="scenes"
             id={scene.id}
             field="locations"
             value={scene.locations}
             options={availableLocations}
-            chipHref="/locations"
+            chipHref={`/projects/${slug}/locations`}
           />
         </div>
 
         {/* Cinematics — collapsible, sits just before the footer */}
-        <SceneCinematics scene={scene} />
+        <SceneCinematics slug={slug} scene={scene} />
 
         {/* Footer */}
         {selectedTake?.status === "failed" && selectedTake.error ? (
@@ -187,6 +195,7 @@ export default function SceneCard({
         ) : (
           <p className="text-xs text-neutral-500 inline-flex items-center flex-wrap gap-1">
             <EditableNumber
+              slug={slug}
               type="scenes"
               id={scene.id}
               field="duration"
@@ -194,6 +203,7 @@ export default function SceneCard({
             />
             s ·{" "}
             <EditableText
+              slug={slug}
               type="scenes"
               id={scene.id}
               field="videoModel"
