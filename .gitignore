@@ -21,6 +21,9 @@ out/
 .idea/
 .DS_Store
 
+# Worktrees
+.worktrees/
+
 # Logs
 *.log
 npm-debug.log*
