@@ -1,11 +1,12 @@
 import path from "node:path";
+import * as self from "./paths";
 
 export function repoRoot(): string {
   return path.resolve(process.cwd(), "../..");
 }
 
 export function projectRoot(slug: string): string {
-  return path.join(repoRoot(), "projects", slug);
+  return path.join(self.repoRoot(), "projects", slug);
 }
 
 export function projectPaths(slug: string) {
@@ -24,10 +25,10 @@ export function projectPaths(slug: string) {
 
 export const studioPaths = {
   get configFile() {
-    return path.join(repoRoot(), "slopstudio.json");
+    return path.join(self.repoRoot(), "slopstudio.json");
   },
   get projectsDir() {
-    return path.join(repoRoot(), "projects");
+    return path.join(self.repoRoot(), "projects");
   },
 };
 
@@ -35,27 +36,27 @@ export const studioPaths = {
 // Kept temporarily so unmigrated callers still compile.
 export const paths = {
   get contentDir() {
-    return path.join(repoRoot(), "content");
+    return path.join(self.repoRoot(), "content");
   },
   get mediaDir() {
-    return path.join(repoRoot(), "media");
+    return path.join(self.repoRoot(), "media");
   },
   get dna() {
-    return path.join(repoRoot(), "content/dna.json");
+    return path.join(self.repoRoot(), "content/dna.json");
   },
   get state() {
-    return path.join(repoRoot(), "content/_state.json");
+    return path.join(self.repoRoot(), "content/_state.json");
   },
   get charactersDir() {
-    return path.join(repoRoot(), "content/characters");
+    return path.join(self.repoRoot(), "content/characters");
   },
   get locationsDir() {
-    return path.join(repoRoot(), "content/locations");
+    return path.join(self.repoRoot(), "content/locations");
   },
   get scenesDir() {
-    return path.join(repoRoot(), "content/scenes");
+    return path.join(self.repoRoot(), "content/scenes");
   },
   get episodesDir() {
-    return path.join(repoRoot(), "content/episodes");
+    return path.join(self.repoRoot(), "content/episodes");
   },
 };

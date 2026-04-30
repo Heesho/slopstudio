@@ -14,7 +14,8 @@ import {
   type Scene,
   type State,
 } from "./schemas";
-import { paths } from "./paths";
+import { projectPaths } from "./paths";
+import { assertSafeSlug } from "./studio";
 
 async function readJson(filepath: string): Promise<unknown> {
   const raw = await fs.readFile(filepath, "utf-8");
@@ -35,22 +36,33 @@ async function readJsonDir<T>(dir: string, schema: { parse: (x: unknown) => T })
   return items;
 }
 
-export async function readDna(): Promise<Dna> {
-  return DnaSchema.parse(await readJson(paths.dna));
+export async function readDna(slug: string): Promise<Dna> {
+  assertSafeSlug(slug);
+  return DnaSchema.parse(await readJson(projectPaths(slug).dna));
 }
 
-export async function readState(): Promise<State> {
+export async function readState(slug: string): Promise<State> {
+  assertSafeSlug(slug);
   try {
-    return StateSchema.parse(await readJson(paths.state));
+    return StateSchema.parse(await readJson(projectPaths(slug).state));
   } catch {
     return { lastBalance: null, lastSyncAt: null, recentJobs: [] };
   }
 }
 
-export const readAllCharacters = (): Promise<Character[]> =>
-  readJsonDir(paths.charactersDir, CharacterSchema);
-export const readAllLocations = (): Promise<Location[]> =>
-  readJsonDir(paths.locationsDir, LocationSchema);
-export const readAllScenes = (): Promise<Scene[]> => readJsonDir(paths.scenesDir, SceneSchema);
-export const readAllEpisodes = (): Promise<Episode[]> =>
-  readJsonDir(paths.episodesDir, EpisodeSchema);
+export const readAllCharacters = (slug: string): Promise<Character[]> => {
+  assertSafeSlug(slug);
+  return readJsonDir(projectPaths(slug).charactersDir, CharacterSchema);
+};
+export const readAllLocations = (slug: string): Promise<Location[]> => {
+  assertSafeSlug(slug);
+  return readJsonDir(projectPaths(slug).locationsDir, LocationSchema);
+};
+export const readAllScenes = (slug: string): Promise<Scene[]> => {
+  assertSafeSlug(slug);
+  return readJsonDir(projectPaths(slug).scenesDir, SceneSchema);
+};
+export const readAllEpisodes = (slug: string): Promise<Episode[]> => {
+  assertSafeSlug(slug);
+  return readJsonDir(projectPaths(slug).episodesDir, EpisodeSchema);
+};
