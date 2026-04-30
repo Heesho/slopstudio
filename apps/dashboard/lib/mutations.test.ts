@@ -13,19 +13,21 @@ import {
   TakeNotFoundError,
   updateEntityField,
 } from "./mutations";
-import { paths } from "./paths";
+import * as pathsModule from "./paths";
+
+const slug = "test-project";
 
 describe("selectTake", () => {
   let tmpRoot: string;
+  let projectDir: string;
 
   beforeEach(async () => {
-    tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "cambria-mut-"));
-    await fs.mkdir(path.join(tmpRoot, "characters"), { recursive: true });
-    await fs.mkdir(path.join(tmpRoot, "locations"), { recursive: true });
-    await fs.mkdir(path.join(tmpRoot, "scenes"), { recursive: true });
-    vi.spyOn(paths, "charactersDir", "get").mockReturnValue(path.join(tmpRoot, "characters"));
-    vi.spyOn(paths, "locationsDir", "get").mockReturnValue(path.join(tmpRoot, "locations"));
-    vi.spyOn(paths, "scenesDir", "get").mockReturnValue(path.join(tmpRoot, "scenes"));
+    tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "slopstudio-mut-"));
+    projectDir = path.join(tmpRoot, "projects", slug, "content");
+    await fs.mkdir(path.join(projectDir, "characters"), { recursive: true });
+    await fs.mkdir(path.join(projectDir, "locations"), { recursive: true });
+    await fs.mkdir(path.join(projectDir, "scenes"), { recursive: true });
+    vi.spyOn(pathsModule, "repoRoot").mockReturnValue(tmpRoot);
   });
 
   afterEach(async () => {
@@ -35,7 +37,7 @@ describe("selectTake", () => {
 
   it("updates selectedTakeId on a character", async () => {
     const id = "char1";
-    const file = path.join(tmpRoot, "characters", `${id}.json`);
+    const file = path.join(projectDir, "characters", `${id}.json`);
     const data = {
       id,
       name: "C",
@@ -49,7 +51,7 @@ describe("selectTake", () => {
       selectedTakeId: "550e8400-e29b-41d4-a716-446655440000",
     };
     await fs.writeFile(file, JSON.stringify(data));
-    await selectTake("characters", id, "660e8400-e29b-41d4-a716-446655440000");
+    await selectTake(slug, "characters", id, "660e8400-e29b-41d4-a716-446655440000");
     const updated = JSON.parse(await fs.readFile(file, "utf-8"));
     expect(updated.selectedTakeId).toBe("660e8400-e29b-41d4-a716-446655440000");
     expect(updated.takes).toHaveLength(2); // takes array preserved
@@ -57,7 +59,7 @@ describe("selectTake", () => {
 
   it("rejects a jobId that doesn't exist in takes", async () => {
     const id = "char2";
-    const file = path.join(tmpRoot, "characters", `${id}.json`);
+    const file = path.join(projectDir, "characters", `${id}.json`);
     await fs.writeFile(
       file,
       JSON.stringify({
@@ -71,13 +73,13 @@ describe("selectTake", () => {
       }),
     );
     await expect(
-      selectTake("characters", id, "999e8400-e29b-41d4-a716-446655440000"),
+      selectTake(slug, "characters", id, "999e8400-e29b-41d4-a716-446655440000"),
     ).rejects.toBeInstanceOf(TakeNotFoundError);
   });
 
   it("works on a location", async () => {
     const id = "loc1";
-    const file = path.join(tmpRoot, "locations", `${id}.json`);
+    const file = path.join(projectDir, "locations", `${id}.json`);
     await fs.writeFile(
       file,
       JSON.stringify({
@@ -89,14 +91,14 @@ describe("selectTake", () => {
         selectedTakeId: null,
       }),
     );
-    await selectTake("locations", id, "770e8400-e29b-41d4-a716-446655440000");
+    await selectTake(slug, "locations", id, "770e8400-e29b-41d4-a716-446655440000");
     const updated = JSON.parse(await fs.readFile(file, "utf-8"));
     expect(updated.selectedTakeId).toBe("770e8400-e29b-41d4-a716-446655440000");
   });
 
   it("works on a scene", async () => {
     const id = "scene1";
-    const file = path.join(tmpRoot, "scenes", `${id}.json`);
+    const file = path.join(projectDir, "scenes", `${id}.json`);
     await fs.writeFile(
       file,
       JSON.stringify({
@@ -114,46 +116,46 @@ describe("selectTake", () => {
         selectedTakeId: null,
       }),
     );
-    await selectTake("scenes", id, "880e8400-e29b-41d4-a716-446655440000");
+    await selectTake(slug, "scenes", id, "880e8400-e29b-41d4-a716-446655440000");
     const updated = JSON.parse(await fs.readFile(file, "utf-8"));
     expect(updated.selectedTakeId).toBe("880e8400-e29b-41d4-a716-446655440000");
   });
 
   it("rejects a missing entity file with EntityNotFoundError", async () => {
     await expect(
-      selectTake("characters", "does-not-exist", "550e8400-e29b-41d4-a716-446655440000"),
+      selectTake(slug, "characters", "does-not-exist", "550e8400-e29b-41d4-a716-446655440000"),
     ).rejects.toBeInstanceOf(EntityNotFoundError);
   });
 
   it("rejects an id that escapes the entity dir (path traversal)", async () => {
     // Defense-in-depth — exercise the regex+relative path guard.
     await expect(
-      selectTake("characters", "../../etc/passwd", "550e8400-e29b-41d4-a716-446655440000"),
+      selectTake(slug, "characters", "../../etc/passwd", "550e8400-e29b-41d4-a716-446655440000"),
     ).rejects.toBeInstanceOf(EntityValidationError);
   });
 
   it("rejects an id with disallowed characters", async () => {
     await expect(
-      selectTake("characters", "name with spaces", "550e8400-e29b-41d4-a716-446655440000"),
+      selectTake(slug, "characters", "name with spaces", "550e8400-e29b-41d4-a716-446655440000"),
     ).rejects.toBeInstanceOf(EntityValidationError);
   });
 
   it("rejects an entity file with malformed JSON as EntityCorruptError", async () => {
     const id = "bad-json";
-    await fs.writeFile(path.join(tmpRoot, "characters", `${id}.json`), "{not json");
+    await fs.writeFile(path.join(projectDir, "characters", `${id}.json`), "{not json");
     await expect(
-      selectTake("characters", id, "550e8400-e29b-41d4-a716-446655440000"),
+      selectTake(slug, "characters", id, "550e8400-e29b-41d4-a716-446655440000"),
     ).rejects.toBeInstanceOf(EntityCorruptError);
   });
 
   it("rejects an entity file that fails schema validation as EntityCorruptError", async () => {
     const id = "bad-shape";
     await fs.writeFile(
-      path.join(tmpRoot, "characters", `${id}.json`),
+      path.join(projectDir, "characters", `${id}.json`),
       JSON.stringify({ id, name: "C" }), // missing required fields
     );
     await expect(
-      selectTake("characters", id, "550e8400-e29b-41d4-a716-446655440000"),
+      selectTake(slug, "characters", id, "550e8400-e29b-41d4-a716-446655440000"),
     ).rejects.toBeInstanceOf(EntityCorruptError);
   });
 
@@ -162,6 +164,7 @@ describe("selectTake", () => {
     // should still fail loudly. We cast through unknown to simulate that.
     await expect(
       selectTake(
+        slug,
         "unknown" as unknown as EntityType,
         "char1",
         "550e8400-e29b-41d4-a716-446655440000",
@@ -172,19 +175,18 @@ describe("selectTake", () => {
 
 describe("deleteTake", () => {
   let tmpRoot: string;
+  let projectDir: string;
   let mediaRoot: string;
 
   beforeEach(async () => {
-    tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "cambria-del-"));
-    mediaRoot = path.join(tmpRoot, "media");
-    await fs.mkdir(path.join(tmpRoot, "characters"), { recursive: true });
-    await fs.mkdir(path.join(tmpRoot, "locations"), { recursive: true });
-    await fs.mkdir(path.join(tmpRoot, "scenes"), { recursive: true });
+    tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "slopstudio-mut-"));
+    projectDir = path.join(tmpRoot, "projects", slug, "content");
+    mediaRoot = path.join(tmpRoot, "projects", slug, "media");
+    await fs.mkdir(path.join(projectDir, "characters"), { recursive: true });
+    await fs.mkdir(path.join(projectDir, "locations"), { recursive: true });
+    await fs.mkdir(path.join(projectDir, "scenes"), { recursive: true });
     await fs.mkdir(path.join(mediaRoot, "characters", "char1"), { recursive: true });
-    vi.spyOn(paths, "charactersDir", "get").mockReturnValue(path.join(tmpRoot, "characters"));
-    vi.spyOn(paths, "locationsDir", "get").mockReturnValue(path.join(tmpRoot, "locations"));
-    vi.spyOn(paths, "scenesDir", "get").mockReturnValue(path.join(tmpRoot, "scenes"));
-    vi.spyOn(paths, "mediaDir", "get").mockReturnValue(mediaRoot);
+    vi.spyOn(pathsModule, "repoRoot").mockReturnValue(tmpRoot);
   });
 
   afterEach(async () => {
@@ -199,7 +201,7 @@ describe("deleteTake", () => {
     const takeAFile = `media/characters/${id}/${jobIdA}.png`;
     await fs.writeFile(path.join(mediaRoot, "characters", id, `${jobIdA}.png`), "fake-png-bytes");
     await fs.writeFile(
-      path.join(tmpRoot, "characters", `${id}.json`),
+      path.join(projectDir, "characters", `${id}.json`),
       JSON.stringify({
         id, name: "C", imagePrompt: "", description: "", imageModel: "m",
         takes: [
@@ -210,9 +212,9 @@ describe("deleteTake", () => {
       }),
     );
 
-    await deleteTake("characters", id, jobIdA);
+    await deleteTake(slug, "characters", id, jobIdA);
 
-    const updated = JSON.parse(await fs.readFile(path.join(tmpRoot, "characters", `${id}.json`), "utf-8"));
+    const updated = JSON.parse(await fs.readFile(path.join(projectDir, "characters", `${id}.json`), "utf-8"));
     expect(updated.takes).toHaveLength(1);
     expect(updated.takes[0].jobId).toBe(jobIdB);
     expect(updated.selectedTakeId).toBe(jobIdB); // unchanged because deleted take wasn't selected
@@ -227,7 +229,7 @@ describe("deleteTake", () => {
     const jobIdB = "660e8400-e29b-41d4-a716-446655440000";
     await fs.mkdir(path.join(mediaRoot, "characters", id), { recursive: true });
     await fs.writeFile(
-      path.join(tmpRoot, "characters", `${id}.json`),
+      path.join(projectDir, "characters", `${id}.json`),
       JSON.stringify({
         id, name: "C", imagePrompt: "", description: "", imageModel: "m",
         takes: [
@@ -238,9 +240,9 @@ describe("deleteTake", () => {
       }),
     );
 
-    await deleteTake("characters", id, jobIdB);
+    await deleteTake(slug, "characters", id, jobIdB);
 
-    const updated = JSON.parse(await fs.readFile(path.join(tmpRoot, "characters", `${id}.json`), "utf-8"));
+    const updated = JSON.parse(await fs.readFile(path.join(projectDir, "characters", `${id}.json`), "utf-8"));
     expect(updated.takes).toHaveLength(1);
     expect(updated.selectedTakeId).toBe(jobIdA); // newest remaining done take
   });
@@ -250,7 +252,7 @@ describe("deleteTake", () => {
     const jobIdA = "550e8400-e29b-41d4-a716-446655440000";
     await fs.mkdir(path.join(mediaRoot, "characters", id), { recursive: true });
     await fs.writeFile(
-      path.join(tmpRoot, "characters", `${id}.json`),
+      path.join(projectDir, "characters", `${id}.json`),
       JSON.stringify({
         id, name: "C", imagePrompt: "", description: "", imageModel: "m",
         takes: [{ jobId: jobIdA, status: "done", generatedAt: "2026-04-28T12:00:00Z" }],
@@ -258,9 +260,9 @@ describe("deleteTake", () => {
       }),
     );
 
-    await deleteTake("characters", id, jobIdA);
+    await deleteTake(slug, "characters", id, jobIdA);
 
-    const updated = JSON.parse(await fs.readFile(path.join(tmpRoot, "characters", `${id}.json`), "utf-8"));
+    const updated = JSON.parse(await fs.readFile(path.join(projectDir, "characters", `${id}.json`), "utf-8"));
     expect(updated.takes).toHaveLength(0);
     expect(updated.selectedTakeId).toBeNull();
   });
@@ -269,7 +271,7 @@ describe("deleteTake", () => {
     const id = "char-x";
     await fs.mkdir(path.join(mediaRoot, "characters", id), { recursive: true });
     await fs.writeFile(
-      path.join(tmpRoot, "characters", `${id}.json`),
+      path.join(projectDir, "characters", `${id}.json`),
       JSON.stringify({
         id, name: "C", imagePrompt: "", description: "", imageModel: "m",
         takes: [{ jobId: "550e8400-e29b-41d4-a716-446655440000", status: "done" }],
@@ -278,7 +280,7 @@ describe("deleteTake", () => {
     );
 
     await expect(
-      deleteTake("characters", id, "999e8400-e29b-41d4-a716-446655440000"),
+      deleteTake(slug, "characters", id, "999e8400-e29b-41d4-a716-446655440000"),
     ).rejects.toBeInstanceOf(TakeNotFoundError);
   });
 
@@ -288,7 +290,7 @@ describe("deleteTake", () => {
     await fs.mkdir(path.join(mediaRoot, "scenes", id), { recursive: true });
     await fs.writeFile(path.join(mediaRoot, "scenes", id, `${jobId}.mp4`), "fake-mp4");
     await fs.writeFile(
-      path.join(tmpRoot, "scenes", `${id}.json`),
+      path.join(projectDir, "scenes", `${id}.json`),
       JSON.stringify({
         id, episodeId: "ep-1", order: 0, title: "T", prompt: "p", narration: "n",
         characters: [], locations: [], duration: 6, videoModel: "m",
@@ -297,9 +299,9 @@ describe("deleteTake", () => {
       }),
     );
 
-    await deleteTake("scenes", id, jobId);
+    await deleteTake(slug, "scenes", id, jobId);
 
-    const updated = JSON.parse(await fs.readFile(path.join(tmpRoot, "scenes", `${id}.json`), "utf-8"));
+    const updated = JSON.parse(await fs.readFile(path.join(projectDir, "scenes", `${id}.json`), "utf-8"));
     expect(updated.takes).toHaveLength(0);
     expect(updated.selectedTakeId).toBeNull();
     await expect(fs.access(path.join(mediaRoot, "scenes", id, `${jobId}.mp4`))).rejects.toThrow();
@@ -310,7 +312,7 @@ describe("deleteTake", () => {
     const jobId = "550e8400-e29b-41d4-a716-446655440000";
     await fs.mkdir(path.join(mediaRoot, "characters", id), { recursive: true });
     await fs.writeFile(
-      path.join(tmpRoot, "characters", `${id}.json`),
+      path.join(projectDir, "characters", `${id}.json`),
       JSON.stringify({
         id, name: "C", imagePrompt: "", description: "", imageModel: "m",
         takes: [{ jobId, imagePath: `media/characters/${id}/${jobId}.png`, status: "done" }],
@@ -319,22 +321,22 @@ describe("deleteTake", () => {
     );
 
     // No file written to media — unlink should silently no-op
-    await expect(deleteTake("characters", id, jobId)).resolves.toBeUndefined();
-    const updated = JSON.parse(await fs.readFile(path.join(tmpRoot, "characters", `${id}.json`), "utf-8"));
+    await expect(deleteTake(slug, "characters", id, jobId)).resolves.toBeUndefined();
+    const updated = JSON.parse(await fs.readFile(path.join(projectDir, "characters", `${id}.json`), "utf-8"));
     expect(updated.takes).toHaveLength(0);
   });
 });
 
 describe("updateEntityField", () => {
   let tmpRoot: string;
+  let projectDir: string;
 
   beforeEach(async () => {
-    tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "cambria-uef-"));
-    await fs.mkdir(path.join(tmpRoot, "characters"), { recursive: true });
-    await fs.mkdir(path.join(tmpRoot, "scenes"), { recursive: true });
-    vi.spyOn(paths, "charactersDir", "get").mockReturnValue(path.join(tmpRoot, "characters"));
-    vi.spyOn(paths, "scenesDir", "get").mockReturnValue(path.join(tmpRoot, "scenes"));
-    vi.spyOn(paths, "dna", "get").mockReturnValue(path.join(tmpRoot, "dna.json"));
+    tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "slopstudio-mut-"));
+    projectDir = path.join(tmpRoot, "projects", slug, "content");
+    await fs.mkdir(path.join(projectDir, "characters"), { recursive: true });
+    await fs.mkdir(path.join(projectDir, "scenes"), { recursive: true });
+    vi.spyOn(pathsModule, "repoRoot").mockReturnValue(tmpRoot);
   });
 
   afterEach(async () => {
@@ -344,17 +346,17 @@ describe("updateEntityField", () => {
 
   it("updates a free-text field on a character", async () => {
     const id = "c1";
-    await fs.writeFile(path.join(tmpRoot, "characters", `${id}.json`), JSON.stringify({
+    await fs.writeFile(path.join(projectDir, "characters", `${id}.json`), JSON.stringify({
       id, name: "C", imagePrompt: "p", description: "d", imageModel: "m",
       takes: [], selectedTakeId: null,
     }));
-    await updateEntityField("characters", id, "description", "new behavioral description");
-    const updated = JSON.parse(await fs.readFile(path.join(tmpRoot, "characters", `${id}.json`), "utf-8"));
+    await updateEntityField(slug, "characters", id, "description", "new behavioral description");
+    const updated = JSON.parse(await fs.readFile(path.join(projectDir, "characters", `${id}.json`), "utf-8"));
     expect(updated.description).toBe("new behavioral description");
   });
 
   it("updates a cinematic field on DNA (single-file)", async () => {
-    await fs.writeFile(path.join(tmpRoot, "dna.json"), JSON.stringify({
+    await fs.writeFile(path.join(projectDir, "dna.json"), JSON.stringify({
       title: "X", concept: "Y", stylePrompt: "Z", narratorVoice: "N",
       aspectRatio: "9:16", videoModel: "seedance_2_0",
       characterImageModel: "m", characterRefAspectRatio: "16:9", characterRefTemplate: "t",
@@ -362,48 +364,48 @@ describe("updateEntityField", () => {
       genre: "auto", colorPalette: "auto", lighting: "auto", cameraMoveset: "auto",
       camera: "auto", lens: "auto", focalLength: "auto", aperture: "auto",
     }));
-    await updateEntityField("dna", "_", "genre", "drama");
-    const updated = JSON.parse(await fs.readFile(path.join(tmpRoot, "dna.json"), "utf-8"));
+    await updateEntityField(slug, "dna", "_", "genre", "drama");
+    const updated = JSON.parse(await fs.readFile(path.join(projectDir, "dna.json"), "utf-8"));
     expect(updated.genre).toBe("drama");
   });
 
   it("updates an array field on a scene", async () => {
     const id = "s1";
-    await fs.writeFile(path.join(tmpRoot, "scenes", `${id}.json`), JSON.stringify({
+    await fs.writeFile(path.join(projectDir, "scenes", `${id}.json`), JSON.stringify({
       id, episodeId: "e1", order: 0, title: "T", prompt: "p", narration: "n",
       characters: ["anomalocaris"], locations: [], duration: 6, videoModel: "v",
       takes: [], selectedTakeId: null,
     }));
-    await updateEntityField("scenes", id, "characters", ["anomalocaris", "trilobite"]);
-    const updated = JSON.parse(await fs.readFile(path.join(tmpRoot, "scenes", `${id}.json`), "utf-8"));
+    await updateEntityField(slug, "scenes", id, "characters", ["anomalocaris", "trilobite"]);
+    const updated = JSON.parse(await fs.readFile(path.join(projectDir, "scenes", `${id}.json`), "utf-8"));
     expect(updated.characters).toEqual(["anomalocaris", "trilobite"]);
   });
 
   it("rejects an unknown field with FieldNotEditableError", async () => {
     const id = "c1";
-    await fs.writeFile(path.join(tmpRoot, "characters", `${id}.json`), JSON.stringify({
+    await fs.writeFile(path.join(projectDir, "characters", `${id}.json`), JSON.stringify({
       id, name: "C", imagePrompt: "p", description: "d", imageModel: "m",
       takes: [], selectedTakeId: null,
     }));
     await expect(
-      updateEntityField("characters", id, "id", "renamed"),
+      updateEntityField(slug, "characters", id, "id", "renamed"),
     ).rejects.toBeInstanceOf(FieldNotEditableError);
   });
 
   it("rejects an invalid value via Zod (negative duration)", async () => {
     const id = "s1";
-    await fs.writeFile(path.join(tmpRoot, "scenes", `${id}.json`), JSON.stringify({
+    await fs.writeFile(path.join(projectDir, "scenes", `${id}.json`), JSON.stringify({
       id, episodeId: "e1", order: 0, title: "T", prompt: "p", narration: "n",
       characters: [], locations: [], duration: 6, videoModel: "v",
       takes: [], selectedTakeId: null,
     }));
     await expect(
-      updateEntityField("scenes", id, "duration", -3),
+      updateEntityField(slug, "scenes", id, "duration", -3),
     ).rejects.toBeInstanceOf(EntityValidationError);
   });
 
   it("rejects an invalid genre enum value on DNA", async () => {
-    await fs.writeFile(path.join(tmpRoot, "dna.json"), JSON.stringify({
+    await fs.writeFile(path.join(projectDir, "dna.json"), JSON.stringify({
       title: "X", concept: "Y", stylePrompt: "Z", narratorVoice: "N",
       aspectRatio: "9:16", videoModel: "v",
       characterImageModel: "m", characterRefAspectRatio: "16:9", characterRefTemplate: "t",
@@ -412,24 +414,24 @@ describe("updateEntityField", () => {
       camera: "auto", lens: "auto", focalLength: "auto", aperture: "auto",
     }));
     await expect(
-      updateEntityField("dna", "_", "genre", "musical"),
+      updateEntityField(slug, "dna", "_", "genre", "musical"),
     ).rejects.toBeInstanceOf(EntityValidationError);
   });
 });
 
 describe("selectTake / deleteTake on firstFrameTakes", () => {
   let tmpRoot: string;
+  let projectDir: string;
   let mediaRoot: string;
 
   beforeEach(async () => {
-    tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "cambria-ff-"));
-    mediaRoot = path.join(tmpRoot, "media");
-    await fs.mkdir(path.join(tmpRoot, "characters"), { recursive: true });
-    await fs.mkdir(path.join(tmpRoot, "scenes"), { recursive: true });
+    tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "slopstudio-mut-"));
+    projectDir = path.join(tmpRoot, "projects", slug, "content");
+    mediaRoot = path.join(tmpRoot, "projects", slug, "media");
+    await fs.mkdir(path.join(projectDir, "characters"), { recursive: true });
+    await fs.mkdir(path.join(projectDir, "scenes"), { recursive: true });
     await fs.mkdir(path.join(mediaRoot, "scenes", "s1"), { recursive: true });
-    vi.spyOn(paths, "charactersDir", "get").mockReturnValue(path.join(tmpRoot, "characters"));
-    vi.spyOn(paths, "scenesDir", "get").mockReturnValue(path.join(tmpRoot, "scenes"));
-    vi.spyOn(paths, "mediaDir", "get").mockReturnValue(mediaRoot);
+    vi.spyOn(pathsModule, "repoRoot").mockReturnValue(tmpRoot);
   });
 
   afterEach(async () => {
@@ -440,7 +442,7 @@ describe("selectTake / deleteTake on firstFrameTakes", () => {
   it("selectTake updates firstFrameSelectedTakeId on a scene", async () => {
     const id = "s1";
     const jobId = "550e8400-e29b-41d4-a716-446655440000";
-    await fs.writeFile(path.join(tmpRoot, "scenes", `${id}.json`), JSON.stringify({
+    await fs.writeFile(path.join(projectDir, "scenes", `${id}.json`), JSON.stringify({
       id, episodeId: "e1", order: 0, title: "T", prompt: "p", narration: "n",
       characters: [], locations: [], duration: 6, videoModel: "v",
       takes: [], selectedTakeId: null,
@@ -451,8 +453,8 @@ describe("selectTake / deleteTake on firstFrameTakes", () => {
       }],
       firstFrameSelectedTakeId: null,
     }));
-    await selectTake("scenes", id, jobId, "firstFrameTakes");
-    const updated = JSON.parse(await fs.readFile(path.join(tmpRoot, "scenes", `${id}.json`), "utf-8"));
+    await selectTake(slug, "scenes", id, jobId, "firstFrameTakes");
+    const updated = JSON.parse(await fs.readFile(path.join(projectDir, "scenes", `${id}.json`), "utf-8"));
     expect(updated.firstFrameSelectedTakeId).toBe(jobId);
     expect(updated.selectedTakeId).toBeNull(); // unchanged
   });
@@ -462,7 +464,7 @@ describe("selectTake / deleteTake on firstFrameTakes", () => {
     const jobId = "550e8400-e29b-41d4-a716-446655440000";
     const filePath = `media/scenes/s1/firstframe-${jobId}.png`;
     await fs.writeFile(path.join(mediaRoot, "scenes", id, `firstframe-${jobId}.png`), "fake-png");
-    await fs.writeFile(path.join(tmpRoot, "scenes", `${id}.json`), JSON.stringify({
+    await fs.writeFile(path.join(projectDir, "scenes", `${id}.json`), JSON.stringify({
       id, episodeId: "e1", order: 0, title: "T", prompt: "p", narration: "n",
       characters: [], locations: [], duration: 6, videoModel: "v",
       takes: [], selectedTakeId: null,
@@ -472,8 +474,8 @@ describe("selectTake / deleteTake on firstFrameTakes", () => {
       }],
       firstFrameSelectedTakeId: jobId,
     }));
-    await deleteTake("scenes", id, jobId, "firstFrameTakes");
-    const updated = JSON.parse(await fs.readFile(path.join(tmpRoot, "scenes", `${id}.json`), "utf-8"));
+    await deleteTake(slug, "scenes", id, jobId, "firstFrameTakes");
+    const updated = JSON.parse(await fs.readFile(path.join(projectDir, "scenes", `${id}.json`), "utf-8"));
     expect(updated.firstFrameTakes).toEqual([]);
     expect(updated.firstFrameSelectedTakeId).toBeNull();
     await expect(fs.access(path.join(mediaRoot, "scenes", id, `firstframe-${jobId}.png`))).rejects.toThrow();
@@ -482,12 +484,12 @@ describe("selectTake / deleteTake on firstFrameTakes", () => {
   it("rejects firstFrameTakes on a non-scene entity", async () => {
     const id = "c1";
     const jobId = "550e8400-e29b-41d4-a716-446655440000";
-    await fs.writeFile(path.join(tmpRoot, "characters", `${id}.json`), JSON.stringify({
+    await fs.writeFile(path.join(projectDir, "characters", `${id}.json`), JSON.stringify({
       id, name: "C", imagePrompt: "p", description: "d", imageModel: "m",
       takes: [], selectedTakeId: null,
     }));
     await expect(
-      selectTake("characters", id, jobId, "firstFrameTakes"),
+      selectTake(slug, "characters", id, jobId, "firstFrameTakes"),
     ).rejects.toBeInstanceOf(EntityValidationError);
   });
 
@@ -495,14 +497,14 @@ describe("selectTake / deleteTake on firstFrameTakes", () => {
     // Verify selectTake on default 'takes' collection still works post-refactor.
     const id = "s1";
     const jobId = "660e8400-e29b-41d4-a716-446655440000";
-    await fs.writeFile(path.join(tmpRoot, "scenes", `${id}.json`), JSON.stringify({
+    await fs.writeFile(path.join(projectDir, "scenes", `${id}.json`), JSON.stringify({
       id, episodeId: "e1", order: 0, title: "T", prompt: "p", narration: "n",
       characters: [], locations: [], duration: 6, videoModel: "v",
       takes: [{ jobId, videoPath: "media/scenes/s1/video.mp4", status: "done", generatedAt: "..." }],
       selectedTakeId: null,
     }));
-    await selectTake("scenes", id, jobId); // default collection = "takes"
-    const updated = JSON.parse(await fs.readFile(path.join(tmpRoot, "scenes", `${id}.json`), "utf-8"));
+    await selectTake(slug, "scenes", id, jobId); // default collection = "takes"
+    const updated = JSON.parse(await fs.readFile(path.join(projectDir, "scenes", `${id}.json`), "utf-8"));
     expect(updated.selectedTakeId).toBe(jobId);
   });
 });

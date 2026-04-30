@@ -9,7 +9,8 @@ import {
   LocationSchema,
   SceneSchema,
 } from "./schemas";
-import { paths } from "./paths";
+import { projectPaths } from "./paths";
+import { assertSafeSlug } from "./studio";
 
 export const ENTITY_TYPES = ["dna", "characters", "locations", "scenes", "episodes"] as const;
 export type EntityType = (typeof ENTITY_TYPES)[number];
@@ -60,12 +61,15 @@ const SCHEMAS = {
   episodes: EpisodeSchema,
 } as const;
 
-const DIRS: Record<Exclude<EntityType, "dna">, () => string> = {
-  characters: () => paths.charactersDir,
-  locations: () => paths.locationsDir,
-  scenes: () => paths.scenesDir,
-  episodes: () => paths.episodesDir,
-};
+function dirsFor(slug: string) {
+  const p = projectPaths(slug);
+  return {
+    characters: p.charactersDir,
+    locations: p.locationsDir,
+    scenes: p.scenesDir,
+    episodes: p.episodesDir,
+  } as const;
+}
 
 export const EDITABLE_FIELDS: Record<EntityType, readonly string[]> = {
   dna: [
@@ -115,12 +119,12 @@ export const EDITABLE_FIELDS: Record<EntityType, readonly string[]> = {
 
 const ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
 
-function assertSafeId(type: Exclude<EntityType, "dna">, id: string): void {
+function assertSafeId(slug: string, type: Exclude<EntityType, "dna">, id: string): void {
   if (!ID_PATTERN.test(id) || id.length > 128) {
     throw new EntityValidationError(`invalid id: ${id}`);
   }
   // Defense-in-depth: ensure the resolved file path stays within the entity dir.
-  const dir = DIRS[type]();
+  const dir = dirsFor(slug)[type];
   const file = path.join(dir, `${id}.json`);
   const rel = path.relative(dir, file);
   if (rel.startsWith("..") || path.isAbsolute(rel) || rel.includes(path.sep)) {
@@ -131,13 +135,16 @@ function assertSafeId(type: Exclude<EntityType, "dna">, id: string): void {
 type EntityData<T extends EntityType> = z.infer<(typeof SCHEMAS)[T]>;
 
 export async function readEntity<T extends EntityType>(
+  slug: string,
   type: T,
   id: string,
 ): Promise<{ file: string; data: EntityData<T> }> {
+  assertSafeSlug(slug);
+  const p = projectPaths(slug);
   if (type === "dna") {
     let raw: string;
     try {
-      raw = await fs.readFile(paths.dna, "utf-8");
+      raw = await fs.readFile(p.dna, "utf-8");
     } catch (err) {
       if (err instanceof Error && "code" in err && (err as NodeJS.ErrnoException).code === "ENOENT") {
         throw new EntityNotFoundError("dna not found");
@@ -153,7 +160,7 @@ export async function readEntity<T extends EntityType>(
       );
     }
     try {
-      return { file: paths.dna, data: DnaSchema.parse(parsed) as EntityData<T> };
+      return { file: p.dna, data: DnaSchema.parse(parsed) as EntityData<T> };
     } catch (err) {
       throw new EntityCorruptError(
         `dna fails schema: ${err instanceof Error ? err.message : String(err)}`,
@@ -162,8 +169,8 @@ export async function readEntity<T extends EntityType>(
   }
 
   const dirType = type as Exclude<EntityType, "dna">;
-  assertSafeId(dirType, id);
-  const file = path.join(DIRS[dirType](), `${id}.json`);
+  assertSafeId(slug, dirType, id);
+  const file = path.join(dirsFor(slug)[dirType], `${id}.json`);
 
   let raw: string;
   try {
@@ -201,15 +208,17 @@ export async function writeAtomic(file: string, data: unknown) {
 }
 
 export async function updateEntityField(
+  slug: string,
   type: EntityType,
   id: string,
   field: string,
   value: unknown,
 ): Promise<void> {
+  assertSafeSlug(slug);
   if (!EDITABLE_FIELDS[type].includes(field)) {
     throw new FieldNotEditableError(`field "${field}" is not editable on ${type}`);
   }
-  const { file, data } = await readEntity(type, id);
+  const { file, data } = await readEntity(slug, type, id);
   const updated = { ...data, [field]: value };
   let validated: unknown;
   try {
@@ -225,11 +234,13 @@ export async function updateEntityField(
 type TakeEntityType = Exclude<EntityType, "dna" | "episodes">;
 
 export async function selectTake(
+  slug: string,
   type: EntityType,
   id: string,
   jobId: string,
   collection: TakeCollection = "takes",
 ) {
+  assertSafeSlug(slug);
   if (type === "dna" || type === "episodes") {
     throw new EntityValidationError(`takes are not supported on ${type}`);
   }
@@ -237,7 +248,7 @@ export async function selectTake(
     throw new EntityValidationError(`firstFrameTakes only exist on scenes`);
   }
   const takeType = type as TakeEntityType;
-  const { file, data } = await readEntity(takeType, id);
+  const { file, data } = await readEntity(slug, takeType, id);
   const list = (data as Record<string, unknown>)[collection] as
     | Array<{ jobId: string }>
     | undefined;
@@ -250,11 +261,13 @@ export async function selectTake(
 }
 
 export async function deleteTake(
+  slug: string,
   type: EntityType,
   id: string,
   jobId: string,
   collection: TakeCollection = "takes",
 ) {
+  assertSafeSlug(slug);
   if (type === "dna" || type === "episodes") {
     throw new EntityValidationError(`takes are not supported on ${type}`);
   }
@@ -263,7 +276,7 @@ export async function deleteTake(
   }
 
   const takeType = type as TakeEntityType;
-  const { file, data } = await readEntity(takeType, id);
+  const { file, data } = await readEntity(slug, takeType, id);
   const list = (data as Record<string, unknown>)[collection] as
     | Array<{
         jobId: string;
@@ -287,16 +300,17 @@ export async function deleteTake(
   }
 
   // Resolve the on-disk file to unlink (imagePath for images, videoPath for video).
-  // The path is repo-root-relative (e.g. "media/characters/foo/abc.png").
+  // The path is project-relative (e.g. "media/characters/foo/abc.png").
   const filePath = take.imagePath ?? take.videoPath;
 
   if (filePath) {
-    // mediaDir is the absolute path to <repo>/media, so we need to strip the leading "media/" segment from the JSON-stored path.
+    // mediaDir is the absolute path to <project>/media, so we need to strip the leading "media/" segment from the JSON-stored path.
+    const mediaDir = projectPaths(slug).mediaDir;
     const normalized = filePath.replace(/\\/g, "/").replace(/^\/+/, "");
     const relInsideMedia = normalized.startsWith("media/") ? normalized.slice("media/".length) : normalized;
-    const absolutePath = path.join(paths.mediaDir, relInsideMedia);
+    const absolutePath = path.join(mediaDir, relInsideMedia);
     // Ensure we're still inside mediaDir (defense-in-depth)
-    const mediaRoot = path.resolve(paths.mediaDir);
+    const mediaRoot = path.resolve(mediaDir);
     const resolved = path.resolve(absolutePath);
     if (resolved.startsWith(mediaRoot + path.sep) || resolved === mediaRoot) {
       try {
