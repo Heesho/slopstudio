@@ -1,10 +1,17 @@
 import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { CharacterSchema, LocationSchema, SceneSchema } from "./schemas";
+import type { z } from "zod";
+import {
+  CharacterSchema,
+  DnaSchema,
+  EpisodeSchema,
+  LocationSchema,
+  SceneSchema,
+} from "./schemas";
 import { paths } from "./paths";
 
-export const ENTITY_TYPES = ["characters", "locations", "scenes"] as const;
+export const ENTITY_TYPES = ["dna", "characters", "locations", "scenes", "episodes"] as const;
 export type EntityType = (typeof ENTITY_TYPES)[number];
 
 export class EntityValidationError extends Error {
@@ -31,22 +38,77 @@ export class TakeNotFoundError extends Error {
     this.name = "TakeNotFoundError";
   }
 }
+export class FieldNotEditableError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "FieldNotEditableError";
+  }
+}
 
 const SCHEMAS = {
+  dna: DnaSchema,
   characters: CharacterSchema,
   locations: LocationSchema,
   scenes: SceneSchema,
+  episodes: EpisodeSchema,
 } as const;
 
-const DIRS: Record<EntityType, () => string> = {
+const DIRS: Record<Exclude<EntityType, "dna">, () => string> = {
   characters: () => paths.charactersDir,
   locations: () => paths.locationsDir,
   scenes: () => paths.scenesDir,
+  episodes: () => paths.episodesDir,
 };
+
+export const EDITABLE_FIELDS: Record<EntityType, readonly string[]> = {
+  dna: [
+    "title",
+    "concept",
+    "stylePrompt",
+    "narratorVoice",
+    "aspectRatio",
+    "videoModel",
+    "characterImageModel",
+    "characterRefAspectRatio",
+    "characterRefTemplate",
+    "locationImageModel",
+    "locationRefAspectRatio",
+    "locationRefTemplate",
+    "genre",
+    "colorPalette",
+    "lighting",
+    "cameraMoveset",
+    "camera",
+    "lens",
+    "focalLength",
+    "aperture",
+  ],
+  characters: ["name", "imagePrompt", "description", "imageModel"],
+  locations: ["name", "imagePrompt", "imageModel"],
+  scenes: [
+    "title",
+    "prompt",
+    "narration",
+    "duration",
+    "videoModel",
+    "characters",
+    "locations",
+    "genre",
+    "colorPalette",
+    "lighting",
+    "cameraMoveset",
+    "camera",
+    "lens",
+    "focalLength",
+    "aperture",
+    "firstFramePrompt",
+  ],
+  episodes: ["title", "hook"],
+} as const;
 
 const ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
 
-function assertSafeId(type: EntityType, id: string): void {
+function assertSafeId(type: Exclude<EntityType, "dna">, id: string): void {
   if (!ID_PATTERN.test(id) || id.length > 128) {
     throw new EntityValidationError(`invalid id: ${id}`);
   }
@@ -59,9 +121,42 @@ function assertSafeId(type: EntityType, id: string): void {
   }
 }
 
-export async function readEntity(type: EntityType, id: string) {
-  assertSafeId(type, id);
-  const file = path.join(DIRS[type](), `${id}.json`);
+type EntityData<T extends EntityType> = z.infer<(typeof SCHEMAS)[T]>;
+
+export async function readEntity<T extends EntityType>(
+  type: T,
+  id: string,
+): Promise<{ file: string; data: EntityData<T> }> {
+  if (type === "dna") {
+    let raw: string;
+    try {
+      raw = await fs.readFile(paths.dna, "utf-8");
+    } catch (err) {
+      if (err instanceof Error && "code" in err && (err as NodeJS.ErrnoException).code === "ENOENT") {
+        throw new EntityNotFoundError("dna not found");
+      }
+      throw err;
+    }
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (err) {
+      throw new EntityCorruptError(
+        `dna has invalid JSON: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+    try {
+      return { file: paths.dna, data: DnaSchema.parse(parsed) as EntityData<T> };
+    } catch (err) {
+      throw new EntityCorruptError(
+        `dna fails schema: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+  }
+
+  const dirType = type as Exclude<EntityType, "dna">;
+  assertSafeId(dirType, id);
+  const file = path.join(DIRS[dirType](), `${id}.json`);
 
   let raw: string;
   try {
@@ -82,9 +177,9 @@ export async function readEntity(type: EntityType, id: string) {
     );
   }
 
-  const schema = SCHEMAS[type];
+  const schema = SCHEMAS[dirType];
   try {
-    return { file, data: schema.parse(parsed) };
+    return { file, data: schema.parse(parsed) as EntityData<T> };
   } catch (err) {
     throw new EntityCorruptError(
       `entity ${type}/${id} fails schema: ${err instanceof Error ? err.message : String(err)}`,
@@ -98,8 +193,36 @@ export async function writeAtomic(file: string, data: unknown) {
   await fs.rename(tmp, file);
 }
 
-export async function selectTake(type: EntityType, id: string, jobId: string) {
+export async function updateEntityField(
+  type: EntityType,
+  id: string,
+  field: string,
+  value: unknown,
+): Promise<void> {
+  if (!EDITABLE_FIELDS[type].includes(field)) {
+    throw new FieldNotEditableError(`field "${field}" is not editable on ${type}`);
+  }
   const { file, data } = await readEntity(type, id);
+  const updated = { ...data, [field]: value };
+  let validated: unknown;
+  try {
+    validated = SCHEMAS[type].parse(updated);
+  } catch (err) {
+    throw new EntityValidationError(
+      `value rejected by schema: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+  await writeAtomic(file, validated);
+}
+
+type TakeEntityType = Exclude<EntityType, "dna" | "episodes">;
+
+export async function selectTake(type: EntityType, id: string, jobId: string) {
+  if (type === "dna" || type === "episodes") {
+    throw new EntityValidationError(`takes are not supported on ${type}`);
+  }
+  const takeType = type as TakeEntityType;
+  const { file, data } = await readEntity(takeType, id);
   if (!data.takes.some((t) => t.jobId === jobId)) {
     throw new TakeNotFoundError(`take ${jobId} not found on ${type}/${id}`);
   }
@@ -107,7 +230,11 @@ export async function selectTake(type: EntityType, id: string, jobId: string) {
 }
 
 export async function deleteTake(type: EntityType, id: string, jobId: string) {
-  const { file, data } = await readEntity(type, id);
+  if (type === "dna" || type === "episodes") {
+    throw new EntityValidationError(`takes are not supported on ${type}`);
+  }
+  const takeType = type as TakeEntityType;
+  const { file, data } = await readEntity(takeType, id);
   const take = data.takes.find((t) => t.jobId === jobId);
   if (!take) {
     throw new TakeNotFoundError(`take ${jobId} not found on ${type}/${id}`);

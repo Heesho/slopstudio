@@ -7,9 +7,11 @@ import {
   EntityNotFoundError,
   EntityValidationError,
   type EntityType,
+  FieldNotEditableError,
   deleteTake,
   selectTake,
   TakeNotFoundError,
+  updateEntityField,
 } from "./mutations";
 import { paths } from "./paths";
 
@@ -320,5 +322,97 @@ describe("deleteTake", () => {
     await expect(deleteTake("characters", id, jobId)).resolves.toBeUndefined();
     const updated = JSON.parse(await fs.readFile(path.join(tmpRoot, "characters", `${id}.json`), "utf-8"));
     expect(updated.takes).toHaveLength(0);
+  });
+});
+
+describe("updateEntityField", () => {
+  let tmpRoot: string;
+
+  beforeEach(async () => {
+    tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "cambria-uef-"));
+    await fs.mkdir(path.join(tmpRoot, "characters"), { recursive: true });
+    await fs.mkdir(path.join(tmpRoot, "scenes"), { recursive: true });
+    vi.spyOn(paths, "charactersDir", "get").mockReturnValue(path.join(tmpRoot, "characters"));
+    vi.spyOn(paths, "scenesDir", "get").mockReturnValue(path.join(tmpRoot, "scenes"));
+    vi.spyOn(paths, "dna", "get").mockReturnValue(path.join(tmpRoot, "dna.json"));
+  });
+
+  afterEach(async () => {
+    await fs.rm(tmpRoot, { recursive: true, force: true });
+    vi.restoreAllMocks();
+  });
+
+  it("updates a free-text field on a character", async () => {
+    const id = "c1";
+    await fs.writeFile(path.join(tmpRoot, "characters", `${id}.json`), JSON.stringify({
+      id, name: "C", imagePrompt: "p", description: "d", imageModel: "m",
+      takes: [], selectedTakeId: null,
+    }));
+    await updateEntityField("characters", id, "description", "new behavioral description");
+    const updated = JSON.parse(await fs.readFile(path.join(tmpRoot, "characters", `${id}.json`), "utf-8"));
+    expect(updated.description).toBe("new behavioral description");
+  });
+
+  it("updates a cinematic field on DNA (single-file)", async () => {
+    await fs.writeFile(path.join(tmpRoot, "dna.json"), JSON.stringify({
+      title: "X", concept: "Y", stylePrompt: "Z", narratorVoice: "N",
+      aspectRatio: "9:16", videoModel: "seedance_2_0",
+      characterImageModel: "m", characterRefAspectRatio: "16:9", characterRefTemplate: "t",
+      locationImageModel: "m", locationRefAspectRatio: "16:9", locationRefTemplate: "t",
+      genre: "auto", colorPalette: "auto", lighting: "auto", cameraMoveset: "auto",
+      camera: "auto", lens: "auto", focalLength: "auto", aperture: "auto",
+    }));
+    await updateEntityField("dna", "_", "genre", "drama");
+    const updated = JSON.parse(await fs.readFile(path.join(tmpRoot, "dna.json"), "utf-8"));
+    expect(updated.genre).toBe("drama");
+  });
+
+  it("updates an array field on a scene", async () => {
+    const id = "s1";
+    await fs.writeFile(path.join(tmpRoot, "scenes", `${id}.json`), JSON.stringify({
+      id, episodeId: "e1", order: 0, title: "T", prompt: "p", narration: "n",
+      characters: ["anomalocaris"], locations: [], duration: 6, videoModel: "v",
+      takes: [], selectedTakeId: null,
+    }));
+    await updateEntityField("scenes", id, "characters", ["anomalocaris", "trilobite"]);
+    const updated = JSON.parse(await fs.readFile(path.join(tmpRoot, "scenes", `${id}.json`), "utf-8"));
+    expect(updated.characters).toEqual(["anomalocaris", "trilobite"]);
+  });
+
+  it("rejects an unknown field with FieldNotEditableError", async () => {
+    const id = "c1";
+    await fs.writeFile(path.join(tmpRoot, "characters", `${id}.json`), JSON.stringify({
+      id, name: "C", imagePrompt: "p", description: "d", imageModel: "m",
+      takes: [], selectedTakeId: null,
+    }));
+    await expect(
+      updateEntityField("characters", id, "id", "renamed"),
+    ).rejects.toBeInstanceOf(FieldNotEditableError);
+  });
+
+  it("rejects an invalid value via Zod (negative duration)", async () => {
+    const id = "s1";
+    await fs.writeFile(path.join(tmpRoot, "scenes", `${id}.json`), JSON.stringify({
+      id, episodeId: "e1", order: 0, title: "T", prompt: "p", narration: "n",
+      characters: [], locations: [], duration: 6, videoModel: "v",
+      takes: [], selectedTakeId: null,
+    }));
+    await expect(
+      updateEntityField("scenes", id, "duration", -3),
+    ).rejects.toBeInstanceOf(EntityValidationError);
+  });
+
+  it("rejects an invalid genre enum value on DNA", async () => {
+    await fs.writeFile(path.join(tmpRoot, "dna.json"), JSON.stringify({
+      title: "X", concept: "Y", stylePrompt: "Z", narratorVoice: "N",
+      aspectRatio: "9:16", videoModel: "v",
+      characterImageModel: "m", characterRefAspectRatio: "16:9", characterRefTemplate: "t",
+      locationImageModel: "m", locationRefAspectRatio: "16:9", locationRefTemplate: "t",
+      genre: "auto", colorPalette: "auto", lighting: "auto", cameraMoveset: "auto",
+      camera: "auto", lens: "auto", focalLength: "auto", aperture: "auto",
+    }));
+    await expect(
+      updateEntityField("dna", "_", "genre", "musical"),
+    ).rejects.toBeInstanceOf(EntityValidationError);
   });
 });
