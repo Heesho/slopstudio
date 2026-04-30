@@ -31,32 +31,3 @@ export const studioPaths = {
     return path.join(self.repoRoot(), "projects");
   },
 };
-
-// LEGACY — to be removed in Task 13. Reads from /content and /media at repo root.
-// Kept temporarily so unmigrated callers still compile.
-export const paths = {
-  get contentDir() {
-    return path.join(self.repoRoot(), "content");
-  },
-  get mediaDir() {
-    return path.join(self.repoRoot(), "media");
-  },
-  get dna() {
-    return path.join(self.repoRoot(), "content/dna.json");
-  },
-  get state() {
-    return path.join(self.repoRoot(), "content/_state.json");
-  },
-  get charactersDir() {
-    return path.join(self.repoRoot(), "content/characters");
-  },
-  get locationsDir() {
-    return path.join(self.repoRoot(), "content/locations");
-  },
-  get scenesDir() {
-    return path.join(self.repoRoot(), "content/scenes");
-  },
-  get episodesDir() {
-    return path.join(self.repoRoot(), "content/episodes");
-  },
-};
