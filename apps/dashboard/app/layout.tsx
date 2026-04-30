@@ -4,9 +4,9 @@ import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Cambria",
+  title: "slopstudio",
   description:
-    "Local dashboard for AI-generated docuseries built with Claude Code + Higgsfield",
+    "Local-first folder for AI video making — Claude Code + Higgsfield",
 };
 
 export default function RootLayout({
