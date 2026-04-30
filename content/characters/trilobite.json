@@ -4,6 +4,13 @@
   "imagePrompt": "Olenoides trilobite, segmented exoskeleton with three lobes running head-to-tail, calcified dorsal shield, paired walking legs and gills underneath, compound eyes on the head shield, mottled brown-grey carapace with subtle iridescence, 8cm length, scientifically accurate paleontological reconstruction",
   "description": "A grazer and scavenger of the seafloor. Walks on dozens of paired legs in a slow rhythmic gait; can roll into a defensive ball when threatened. Senses the world through compound eyes and chemosensory antennae. Lives in groups, often half-buried in sediment.",
   "imageModel": "nano_banana_2",
-  "takes": [],
-  "selectedTakeId": null
+  "takes": [
+    {
+      "jobId": "fac14cbc-8226-4f0f-bcf5-3a261d28a3ef",
+      "imagePath": "media/characters/trilobite/fac14cbc-8226-4f0f-bcf5-3a261d28a3ef.png",
+      "status": "done",
+      "generatedAt": "2026-04-29T08:39:07Z"
+    }
+  ],
+  "selectedTakeId": "fac14cbc-8226-4f0f-bcf5-3a261d28a3ef"
 }

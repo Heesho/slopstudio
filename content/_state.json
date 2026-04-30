@@ -1,5 +1,24 @@
 {
-  "lastBalance": null,
-  "lastSyncAt": null,
-  "recentJobs": []
+  "lastBalance": 1240,
+  "lastSyncAt": "2026-04-29T08:39:15Z",
+  "recentJobs": [
+    {
+      "jobId": "e5de1694-0e4d-423b-88be-6ead3317d860",
+      "entity": "characters/anomalocaris",
+      "status": "done",
+      "completedAt": "2026-04-29T08:38:58Z"
+    },
+    {
+      "jobId": "fac14cbc-8226-4f0f-bcf5-3a261d28a3ef",
+      "entity": "characters/trilobite",
+      "status": "done",
+      "completedAt": "2026-04-29T08:39:07Z"
+    },
+    {
+      "jobId": "a212e99f-d1a4-41df-93b7-c37ef0a414fc",
+      "entity": "locations/burgess-shallow-sea",
+      "status": "done",
+      "completedAt": "2026-04-29T08:39:15Z"
+    }
+  ]
 }
