@@ -160,7 +160,7 @@ export default function SceneCard({
             field="characters"
             value={scene.characters}
             options={availableCharacters}
-            hrefForChip={() => "/characters"}
+            chipHref="/characters"
           />
         </div>
 
@@ -174,7 +174,7 @@ export default function SceneCard({
             field="locations"
             value={scene.locations}
             options={availableLocations}
-            hrefForChip={() => "/locations"}
+            chipHref="/locations"
           />
         </div>
 

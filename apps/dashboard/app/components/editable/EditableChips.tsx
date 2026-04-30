@@ -12,15 +12,16 @@ export default function EditableChips({
   field,
   value,
   options,
-  hrefForChip,
+  chipHref,
 }: {
   type: EntityType;
   id: string;
   field: string;
   value: string[];
   options: Option[];
-  // optional: turn each chip's label into a link (e.g. character chip → /characters)
-  hrefForChip?: (chipId: string) => string;
+  // optional: turn each chip's label into a link (e.g. "/characters" for character chips).
+  // String only — RSC cannot serialise function props to client components.
+  chipHref?: string;
 }) {
   const [adding, setAdding] = useState(false);
   const { save, busy, error } = useFieldUpdate(type, id, field);
@@ -56,9 +57,9 @@ export default function EditableChips({
             key={chipId}
             className="inline-flex items-center px-2 py-0.5 rounded bg-neutral-800 text-xs text-neutral-200 hover:bg-neutral-700 transition-colors"
           >
-            {hrefForChip ? (
+            {chipHref ? (
               <Link
-                href={hrefForChip(chipId)}
+                href={chipHref}
                 className="hover:underline"
               >
                 {label}
