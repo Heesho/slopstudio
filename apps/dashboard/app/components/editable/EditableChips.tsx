@@ -2,9 +2,10 @@
 import { useState } from "react";
 import { Plus, X } from "lucide-react";
 import Link from "next/link";
+import { mediaUrl } from "@/lib/media";
 import { useFieldUpdate, type EntityType } from "./useFieldUpdate";
 
-type Option = { id: string; label: string };
+type Option = { id: string; label: string; imagePath?: string };
 
 export default function EditableChips({
   slug,
@@ -57,13 +58,18 @@ export default function EditableChips({
         return (
           <span
             key={chipId}
-            className="inline-flex items-center px-2 py-0.5 rounded bg-neutral-800 text-xs text-neutral-200 hover:bg-neutral-700 transition-colors"
+            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-neutral-800 text-xs text-neutral-200 hover:bg-neutral-700 transition-colors"
           >
+            {opt?.imagePath && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={mediaUrl(slug, opt.imagePath)}
+                alt=""
+                className="w-4 h-4 rounded object-cover"
+              />
+            )}
             {chipHref ? (
-              <Link
-                href={chipHref}
-                className="hover:underline"
-              >
+              <Link href={chipHref} className="hover:underline">
                 {label}
               </Link>
             ) : (
@@ -77,7 +83,7 @@ export default function EditableChips({
                 remove(chipId);
               }}
               disabled={busy}
-              className="ml-1.5 text-neutral-400 hover:text-red-400 disabled:opacity-50"
+              className="text-neutral-400 hover:text-red-400 disabled:opacity-50"
               aria-label={`Remove ${label}`}
             >
               <X size={12} />

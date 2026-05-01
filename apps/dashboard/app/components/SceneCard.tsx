@@ -13,9 +13,6 @@ type Props = {
   scene: Scene;
   episodeNumber?: number;
   episodeTitle?: string;
-  availableCharacters: { id: string; label: string }[];
-  availableLocations: { id: string; label: string }[];
-  // characters and locations remain in props for sub-task 2 (refs/storyboard work).
   characters: Character[];
   locations: Location[];
 };
@@ -38,12 +35,8 @@ export default function SceneCard({
   scene,
   episodeNumber,
   episodeTitle,
-  availableCharacters,
-  availableLocations,
-  // characters/locations are accepted but unused here; sub-task 2 will reintroduce
-  // a refs UI that consumes them.
-  characters: _characters,
-  locations: _locations,
+  characters,
+  locations,
 }: Props) {
   const selectedTake: VideoTake | null =
     scene.takes.find((t) => t.jobId === scene.selectedTakeId) ?? null;
@@ -167,7 +160,10 @@ export default function SceneCard({
             id={scene.id}
             field="characters"
             value={scene.characters}
-            options={availableCharacters}
+            options={characters.map((c) => {
+              const sel = c.takes.find((t) => t.jobId === c.selectedTakeId);
+              return { id: c.id, label: c.name, imagePath: sel?.imagePath };
+            })}
             chipHref={`/projects/${slug}/characters`}
           />
         </div>
@@ -182,7 +178,10 @@ export default function SceneCard({
             id={scene.id}
             field="locations"
             value={scene.locations}
-            options={availableLocations}
+            options={locations.map((l) => {
+              const sel = l.takes.find((t) => t.jobId === l.selectedTakeId);
+              return { id: l.id, label: l.name, imagePath: sel?.imagePath };
+            })}
             chipHref={`/projects/${slug}/locations`}
           />
         </div>

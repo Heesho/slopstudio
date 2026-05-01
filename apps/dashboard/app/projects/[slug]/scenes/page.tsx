@@ -42,8 +42,6 @@ export default async function ScenesPage(props: {
   }
 
   const episodeMap = new Map(episodes.map((e) => [e.id, e]));
-  const availableCharacters = characters.map((c) => ({ id: c.id, label: c.name }));
-  const availableLocations = locations.map((l) => ({ id: l.id, label: l.name }));
 
   // Apply filters
   let filtered = scenes;
@@ -110,8 +108,6 @@ export default async function ScenesPage(props: {
               scene={s}
               episodeNumber={ep?.number}
               episodeTitle={ep?.title}
-              availableCharacters={availableCharacters}
-              availableLocations={availableLocations}
               characters={characters}
               locations={locations}
             />
