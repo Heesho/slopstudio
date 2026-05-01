@@ -143,6 +143,20 @@ export default function SceneCard({
 
         <SceneAudioBlock slug={slug} scene={scene} characters={availableCharacters} />
 
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-neutral-500">Duration</span>
+          <EditableNumber
+            slug={slug}
+            type="scenes"
+            id={scene.id}
+            field="duration"
+            value={scene.duration}
+            min={4}
+            max={15}
+          />
+          <span className="text-xs text-neutral-500">seconds (4–15)</span>
+        </div>
+
         {/* Characters + Locations chips */}
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs uppercase tracking-wider text-neutral-400 mr-1">
@@ -190,14 +204,7 @@ export default function SceneCard({
           <p className="text-xs text-red-400 break-words">{selectedTake.error}</p>
         ) : (
           <p className="text-xs text-neutral-500 inline-flex items-center flex-wrap gap-1">
-            <EditableNumber
-              slug={slug}
-              type="scenes"
-              id={scene.id}
-              field="duration"
-              value={scene.duration}
-            />
-            s ·{" "}
+            {scene.duration}s ·{" "}
             <EditableText
               slug={slug}
               type="scenes"

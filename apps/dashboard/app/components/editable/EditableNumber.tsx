@@ -8,6 +8,8 @@ export default function EditableNumber({
   id,
   field,
   value,
+  min,
+  max,
   className = "",
 }: {
   slug: string;
@@ -15,6 +17,8 @@ export default function EditableNumber({
   id: string;
   field: string;
   value: number;
+  min?: number;
+  max?: number;
   className?: string;
 }) {
   const [editing, setEditing] = useState(false);
@@ -35,6 +39,14 @@ export default function EditableNumber({
     const n = Number(trimmed);
     if (trimmed === "" || Number.isNaN(n)) {
       setLocalError("must be a number");
+      return;
+    }
+    if (typeof min === "number" && n < min) {
+      setLocalError(`must be ≥ ${min}`);
+      return;
+    }
+    if (typeof max === "number" && n > max) {
+      setLocalError(`must be ≤ ${max}`);
       return;
     }
     setLocalError(null);
@@ -75,6 +87,8 @@ export default function EditableNumber({
         ref={ref}
         type="text"
         inputMode="numeric"
+        min={min}
+        max={max}
         value={draft}
         disabled={busy}
         onChange={(e) => setDraft(e.target.value)}
