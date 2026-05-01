@@ -160,7 +160,7 @@ export default function TakeStrip({
                 </button>
               </div>
             )}
-            <StatusChip status={t.status} />
+            {t.status !== "done" && <StatusChip status={t.status} />}
             {isBusy && <span className="text-[10px] text-neutral-500">…</span>}
             {errorByJob[t.jobId] && (
               <span className="text-[10px] text-red-400 max-w-[80px] text-center break-words">
