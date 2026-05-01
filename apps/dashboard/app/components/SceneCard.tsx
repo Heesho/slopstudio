@@ -1,11 +1,10 @@
-import type { Character, Location, Scene, TakeStatus, VideoTake } from "@/lib/schemas";
+import type { Character, Location, Scene, VideoTake } from "@/lib/schemas";
 import { mediaUrl } from "@/lib/media";
 import EditableChips from "./editable/EditableChips";
 import EditableNumber from "./editable/EditableNumber";
 import EditableText from "./editable/EditableText";
 import EditableTextArea from "./editable/EditableTextArea";
 import SceneCinematics from "./SceneCinematics";
-import StatusChip from "./StatusChip";
 import VideoTakeStrip from "./VideoTakeStrip";
 
 type Props = {
@@ -40,7 +39,6 @@ export default function SceneCard({
 }: Props) {
   const selectedTake: VideoTake | null =
     scene.takes.find((t) => t.jobId === scene.selectedTakeId) ?? null;
-  const status: TakeStatus = selectedTake?.status ?? "pending";
   const heroSrc = selectedTake?.videoPath ? mediaUrl(slug, selectedTake.videoPath) : null;
 
   const episodeLabel =
@@ -98,20 +96,11 @@ export default function SceneCard({
             )}
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
-            <StatusChip status={status} />
             <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded border border-neutral-700 bg-neutral-800 text-neutral-300 whitespace-nowrap">
               {episodeLabel}
             </span>
           </div>
         </div>
-
-        {/* Takes */}
-        <VideoTakeStrip
-          slug={slug}
-          entityId={scene.id}
-          takes={scene.takes}
-          selectedTakeId={scene.selectedTakeId}
-        />
 
         {/* Scene prompt — collapsed by default */}
         <details className="group">
@@ -185,6 +174,17 @@ export default function SceneCard({
 
         {/* Cinematics — collapsed */}
         <SceneCinematics slug={slug} scene={scene} />
+
+        {/* Takes — at bottom; left-click to select, right-click for menu */}
+        <div>
+          <p className="text-[10px] uppercase tracking-wider text-neutral-400 mb-1.5">Takes</p>
+          <VideoTakeStrip
+            slug={slug}
+            entityId={scene.id}
+            takes={scene.takes}
+            selectedTakeId={scene.selectedTakeId}
+          />
+        </div>
 
         {/* Footer */}
         {selectedTake?.status === "failed" && selectedTake.error ? (

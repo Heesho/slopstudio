@@ -31,11 +31,11 @@ export default function SceneCinematics({
   scene: Scene;
 }) {
   return (
-    <details className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-4">
-      <summary className="cursor-pointer text-xs uppercase tracking-wider text-neutral-400 select-none">
+    <details className="group">
+      <summary className="cursor-pointer text-xs uppercase tracking-wider text-neutral-400 hover:text-neutral-200 select-none">
         Cinematics
       </summary>
-      <dl className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+      <dl className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-sm">
         <div>
           <dt className="text-neutral-500 mb-1">
             Genre {scene.genre === undefined && <span className="text-neutral-600">(from DNA)</span>}
