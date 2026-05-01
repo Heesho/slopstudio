@@ -35,7 +35,7 @@ export default async function LocationsPage({
       <p className="mt-1 mb-6 text-sm text-neutral-400">
         Recurring places. Lock a reference take to use across scenes.
       </p>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {locations.map((l) => (
           <EntityCard
             key={l.id}

@@ -100,7 +100,7 @@ export default async function ScenesPage(props: {
         </div>
       )}
       <FilterBar slug={slug} episodes={episodes} current={params} />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {filtered.map((s) => {
           const ep = episodeMap.get(s.episodeId);
           return (

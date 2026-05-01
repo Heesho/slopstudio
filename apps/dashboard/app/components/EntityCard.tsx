@@ -66,9 +66,11 @@ export default function EntityCard({
           <StatusChip status={status} />
         </div>
 
-        <div>
-          <p className="text-xs uppercase tracking-wider text-neutral-400">Image prompt</p>
-          <div className="mt-1 text-sm text-neutral-300">
+        <details>
+          <summary className="cursor-pointer text-xs uppercase tracking-wider text-neutral-400 select-none">
+            Image prompt
+          </summary>
+          <div className="mt-2 text-sm text-neutral-300">
             <EditableTextArea
               slug={slug}
               type={entityType}
@@ -78,12 +80,14 @@ export default function EntityCard({
               rows={3}
             />
           </div>
-        </div>
+        </details>
 
         {description !== undefined && (
-          <div>
-            <p className="text-xs uppercase tracking-wider text-neutral-400">Description</p>
-            <div className="mt-1 text-sm text-neutral-300">
+          <details>
+            <summary className="cursor-pointer text-xs uppercase tracking-wider text-neutral-400 select-none">
+              Description
+            </summary>
+            <div className="mt-2 text-sm text-neutral-300">
               <EditableTextArea
                 slug={slug}
                 type={entityType}
@@ -93,7 +97,7 @@ export default function EntityCard({
                 rows={3}
               />
             </div>
-          </div>
+          </details>
         )}
 
         <div>
