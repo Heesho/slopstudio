@@ -416,6 +416,168 @@ describe("updateEntityField", () => {
       updateEntityField(slug, "dna", "_", "genre", "musical"),
     ).rejects.toBeInstanceOf(EntityValidationError);
   });
+
+  describe("audioMode coordinated writes", () => {
+    const baseScene = (overrides: Record<string, unknown> = {}) => ({
+      id: "s1",
+      episodeId: "e1",
+      order: 0,
+      title: "T",
+      prompt: "p",
+      audioMode: "none",
+      audioText: null,
+      speakerCharacterId: null,
+      characters: [],
+      locations: [],
+      duration: 6,
+      videoModel: "v",
+      takes: [],
+      selectedTakeId: null,
+      ...overrides,
+    });
+
+    it("none -> narration coerces audioText to '' and clears speaker", async () => {
+      const id = "s1";
+      await fs.writeFile(
+        path.join(projectDir, "scenes", `${id}.json`),
+        JSON.stringify(baseScene()),
+      );
+      await updateEntityField(slug, "scenes", id, "audioMode", "narration");
+      const updated = JSON.parse(
+        await fs.readFile(path.join(projectDir, "scenes", `${id}.json`), "utf-8"),
+      );
+      expect(updated.audioMode).toBe("narration");
+      expect(updated.audioText).toBe("");
+      expect(updated.speakerCharacterId).toBeNull();
+    });
+
+    it("narration -> none clears audioText and keeps speaker null", async () => {
+      const id = "s1";
+      await fs.writeFile(
+        path.join(projectDir, "scenes", `${id}.json`),
+        JSON.stringify(
+          baseScene({
+            audioMode: "narration",
+            audioText: "hello",
+            speakerCharacterId: null,
+          }),
+        ),
+      );
+      await updateEntityField(slug, "scenes", id, "audioMode", "none");
+      const updated = JSON.parse(
+        await fs.readFile(path.join(projectDir, "scenes", `${id}.json`), "utf-8"),
+      );
+      expect(updated.audioMode).toBe("none");
+      expect(updated.audioText).toBeNull();
+      expect(updated.speakerCharacterId).toBeNull();
+    });
+
+    it("none -> dialogue auto-picks the first linked character", async () => {
+      const id = "s1";
+      await fs.writeFile(
+        path.join(projectDir, "scenes", `${id}.json`),
+        JSON.stringify(
+          baseScene({ characters: ["anomalocaris", "trilobite"] }),
+        ),
+      );
+      await updateEntityField(slug, "scenes", id, "audioMode", "dialogue");
+      const updated = JSON.parse(
+        await fs.readFile(path.join(projectDir, "scenes", `${id}.json`), "utf-8"),
+      );
+      expect(updated.audioMode).toBe("dialogue");
+      expect(updated.audioText).toBe("");
+      expect(updated.speakerCharacterId).toBe("anomalocaris");
+    });
+
+    it("none -> dialogue throws EntityValidationError with no linked characters", async () => {
+      const id = "s1";
+      await fs.writeFile(
+        path.join(projectDir, "scenes", `${id}.json`),
+        JSON.stringify(baseScene({ characters: [] })),
+      );
+      await expect(
+        updateEntityField(slug, "scenes", id, "audioMode", "dialogue"),
+      ).rejects.toThrowError(
+        /cannot set audioMode='dialogue' on a scene with no linked characters/,
+      );
+      await expect(
+        updateEntityField(slug, "scenes", id, "audioMode", "dialogue"),
+      ).rejects.toBeInstanceOf(EntityValidationError);
+    });
+
+    it("dialogue -> narration clears speaker and keeps audioText", async () => {
+      const id = "s1";
+      await fs.writeFile(
+        path.join(projectDir, "scenes", `${id}.json`),
+        JSON.stringify(
+          baseScene({
+            characters: ["anomalocaris"],
+            audioMode: "dialogue",
+            audioText: "look out!",
+            speakerCharacterId: "anomalocaris",
+          }),
+        ),
+      );
+      await updateEntityField(slug, "scenes", id, "audioMode", "narration");
+      const updated = JSON.parse(
+        await fs.readFile(path.join(projectDir, "scenes", `${id}.json`), "utf-8"),
+      );
+      expect(updated.audioMode).toBe("narration");
+      expect(updated.audioText).toBe("look out!");
+      expect(updated.speakerCharacterId).toBeNull();
+    });
+
+    it("dialogue with stale speaker (not in characters list) auto-repicks first", async () => {
+      const id = "s1";
+      // The Scene schema's superRefine doesn't enforce that
+      // speakerCharacterId is a member of `characters` — only that it's
+      // non-null when audioMode==='dialogue'. So this on-disk state is valid
+      // and exercises the stale-speaker branch when we toggle audioMode again.
+      await fs.writeFile(
+        path.join(projectDir, "scenes", `${id}.json`),
+        JSON.stringify(
+          baseScene({
+            characters: ["trilobite"],
+            audioMode: "dialogue",
+            audioText: "stale dialog",
+            speakerCharacterId: "anomalocaris", // not in characters
+          }),
+        ),
+      );
+      // Re-set audioMode to dialogue: the coercion should detect the stale
+      // speaker (not in characters) and re-pick the first linked character.
+      await updateEntityField(slug, "scenes", id, "audioMode", "dialogue");
+      const updated = JSON.parse(
+        await fs.readFile(path.join(projectDir, "scenes", `${id}.json`), "utf-8"),
+      );
+      expect(updated.audioMode).toBe("dialogue");
+      expect(updated.speakerCharacterId).toBe("trilobite");
+      expect(updated.audioText).toBe("stale dialog"); // preserved
+    });
+
+    it("non-audioMode field changes do not trigger coercion", async () => {
+      const id = "s1";
+      await fs.writeFile(
+        path.join(projectDir, "scenes", `${id}.json`),
+        JSON.stringify(
+          baseScene({
+            audioMode: "narration",
+            audioText: "preserved",
+            speakerCharacterId: null,
+          }),
+        ),
+      );
+      await updateEntityField(slug, "scenes", id, "title", "new title");
+      const updated = JSON.parse(
+        await fs.readFile(path.join(projectDir, "scenes", `${id}.json`), "utf-8"),
+      );
+      expect(updated.title).toBe("new title");
+      // audio fields untouched
+      expect(updated.audioMode).toBe("narration");
+      expect(updated.audioText).toBe("preserved");
+      expect(updated.speakerCharacterId).toBeNull();
+    });
+  });
 });
 
 describe("selectTake / deleteTake on firstFrameTakes", () => {

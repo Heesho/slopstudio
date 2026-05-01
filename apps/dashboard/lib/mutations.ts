@@ -221,7 +221,15 @@ export async function updateEntityField(
     throw new FieldNotEditableError(`field "${field}" is not editable on ${type}`);
   }
   const { file, data } = await readEntity(slug, type, id);
-  const updated = { ...data, [field]: value };
+
+  let updated: Record<string, unknown> = { ...data, [field]: value };
+
+  // Audio-mode coordinated write: dependent fields must be set atomically
+  // because the SceneSchema.superRefine enforces cross-field invariants.
+  if (type === "scenes" && field === "audioMode") {
+    updated = coerceAudioFieldsForMode(updated, value);
+  }
+
   let validated: unknown;
   try {
     validated = SCHEMAS[type].parse(updated);
@@ -231,6 +239,41 @@ export async function updateEntityField(
     );
   }
   await writeAtomic(file, validated);
+}
+
+function coerceAudioFieldsForMode(
+  scene: Record<string, unknown>,
+  newMode: unknown,
+): Record<string, unknown> {
+  if (newMode === "none") {
+    return { ...scene, audioText: null, speakerCharacterId: null };
+  }
+  if (newMode === "narration") {
+    const audioText =
+      typeof scene.audioText === "string" ? scene.audioText : "";
+    return { ...scene, audioText, speakerCharacterId: null };
+  }
+  if (newMode === "dialogue") {
+    const audioText =
+      typeof scene.audioText === "string" ? scene.audioText : "";
+    const characters = Array.isArray(scene.characters)
+      ? (scene.characters as string[])
+      : [];
+    const currentSpeaker =
+      typeof scene.speakerCharacterId === "string" && scene.speakerCharacterId !== ""
+        ? scene.speakerCharacterId
+        : null;
+    const validCurrent = currentSpeaker !== null && characters.includes(currentSpeaker);
+    if (!validCurrent && characters.length === 0) {
+      throw new EntityValidationError(
+        "cannot set audioMode='dialogue' on a scene with no linked characters",
+      );
+    }
+    const speakerCharacterId = validCurrent ? currentSpeaker : characters[0];
+    return { ...scene, audioText, speakerCharacterId };
+  }
+  // Unknown mode value — let schema validation reject it.
+  return scene;
 }
 
 type TakeEntityType = Exclude<EntityType, "dna" | "episodes">;
