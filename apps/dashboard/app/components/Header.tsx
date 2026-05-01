@@ -40,7 +40,10 @@ export default function Header({
           >
             ←
           </Link>
-          <p className="font-mono text-sm tracking-wide text-neutral-300 truncate">
+          <p
+            className="font-mono text-sm tracking-wide text-neutral-300 truncate max-w-[240px]"
+            title={title}
+          >
             {title}
           </p>
         </div>
