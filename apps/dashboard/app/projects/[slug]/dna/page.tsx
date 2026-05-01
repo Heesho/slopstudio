@@ -3,6 +3,15 @@ import EditableSelect from "@/app/components/editable/EditableSelect";
 import EditableText from "@/app/components/editable/EditableText";
 import EditableTextArea from "@/app/components/editable/EditableTextArea";
 import { readDna } from "@/lib/content";
+import {
+  APERTURE_OPTIONS,
+  ASPECT_RATIO_OPTIONS,
+  CAMERA_OPTIONS,
+  FOCAL_LENGTH_OPTIONS,
+  IMAGE_MODEL_OPTIONS,
+  LENS_OPTIONS,
+  VIDEO_MODEL_OPTIONS,
+} from "@/lib/dnaOptions";
 import type { Dna } from "@/lib/schemas";
 
 const GENRE_OPTIONS = [
@@ -20,10 +29,6 @@ const CINEMATIC_TEXT_FIELDS: Array<readonly [string, string]> = [
   ["colorPalette", "Color Palette"],
   ["lighting", "Lighting"],
   ["cameraMoveset", "Camera Moveset"],
-  ["camera", "Camera"],
-  ["lens", "Lens"],
-  ["focalLength", "Focal Length"],
-  ["aperture", "Aperture"],
 ];
 
 export default async function DnaPage({
@@ -92,26 +97,26 @@ export default async function DnaPage({
           <div>
             <dt className="text-xs uppercase tracking-wider text-neutral-400">Aspect Ratio</dt>
             <dd className="mt-1">
-              <EditableText
+              <EditableSelect
                 slug={slug}
                 type="dna"
                 id="_"
                 field="aspectRatio"
                 value={dna.aspectRatio}
-                className="font-mono text-sm"
+                options={ASPECT_RATIO_OPTIONS}
               />
             </dd>
           </div>
           <div>
             <dt className="text-xs uppercase tracking-wider text-neutral-400">Video Model</dt>
             <dd className="mt-1">
-              <EditableText
+              <EditableSelect
                 slug={slug}
                 type="dna"
                 id="_"
                 field="videoModel"
                 value={dna.videoModel}
-                className="font-mono text-sm"
+                options={VIDEO_MODEL_OPTIONS}
               />
             </dd>
           </div>
@@ -132,13 +137,13 @@ export default async function DnaPage({
               Character Image Model
             </dt>
             <dd className="mt-1">
-              <EditableText
+              <EditableSelect
                 slug={slug}
                 type="dna"
                 id="_"
                 field="characterImageModel"
                 value={dna.characterImageModel}
-                className="font-mono text-sm"
+                options={IMAGE_MODEL_OPTIONS}
               />
             </dd>
           </div>
@@ -147,13 +152,13 @@ export default async function DnaPage({
               Character Ref Aspect Ratio
             </dt>
             <dd className="mt-1">
-              <EditableText
+              <EditableSelect
                 slug={slug}
                 type="dna"
                 id="_"
                 field="characterRefAspectRatio"
                 value={dna.characterRefAspectRatio}
-                className="font-mono text-sm"
+                options={ASPECT_RATIO_OPTIONS}
               />
             </dd>
           </div>
@@ -162,13 +167,13 @@ export default async function DnaPage({
               Location Image Model
             </dt>
             <dd className="mt-1">
-              <EditableText
+              <EditableSelect
                 slug={slug}
                 type="dna"
                 id="_"
                 field="locationImageModel"
                 value={dna.locationImageModel}
-                className="font-mono text-sm"
+                options={IMAGE_MODEL_OPTIONS}
               />
             </dd>
           </div>
@@ -177,13 +182,13 @@ export default async function DnaPage({
               Location Ref Aspect Ratio
             </dt>
             <dd className="mt-1">
-              <EditableText
+              <EditableSelect
                 slug={slug}
                 type="dna"
                 id="_"
                 field="locationRefAspectRatio"
                 value={dna.locationRefAspectRatio}
-                className="font-mono text-sm"
+                options={ASPECT_RATIO_OPTIONS}
               />
             </dd>
           </div>
@@ -236,6 +241,58 @@ export default async function DnaPage({
                 field="genre"
                 value={dna.genre}
                 options={GENRE_OPTIONS}
+              />
+            </dd>
+          </div>
+          <div>
+            <dt className="text-neutral-500 mb-1">Camera</dt>
+            <dd>
+              <EditableSelect
+                slug={slug}
+                type="dna"
+                id="_"
+                field="camera"
+                value={dna.camera}
+                options={CAMERA_OPTIONS}
+              />
+            </dd>
+          </div>
+          <div>
+            <dt className="text-neutral-500 mb-1">Lens</dt>
+            <dd>
+              <EditableSelect
+                slug={slug}
+                type="dna"
+                id="_"
+                field="lens"
+                value={dna.lens}
+                options={LENS_OPTIONS}
+              />
+            </dd>
+          </div>
+          <div>
+            <dt className="text-neutral-500 mb-1">Focal Length</dt>
+            <dd>
+              <EditableSelect
+                slug={slug}
+                type="dna"
+                id="_"
+                field="focalLength"
+                value={dna.focalLength}
+                options={FOCAL_LENGTH_OPTIONS}
+              />
+            </dd>
+          </div>
+          <div>
+            <dt className="text-neutral-500 mb-1">Aperture</dt>
+            <dd>
+              <EditableSelect
+                slug={slug}
+                type="dna"
+                id="_"
+                field="aperture"
+                value={dna.aperture}
+                options={APERTURE_OPTIONS}
               />
             </dd>
           </div>
