@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, X } from "lucide-react";
 import Link from "next/link";
 import { mediaUrl } from "@/lib/media";
@@ -28,6 +28,19 @@ export default function EditableChips({
 }) {
   const [adding, setAdding] = useState(false);
   const { save, busy, error } = useFieldUpdate(slug, type, id, field);
+
+  useEffect(() => {
+    if (!adding) return;
+    const handler = () => setAdding(false);
+    const id = setTimeout(
+      () => document.addEventListener("mousedown", handler),
+      0,
+    );
+    return () => {
+      clearTimeout(id);
+      document.removeEventListener("mousedown", handler);
+    };
+  }, [adding]);
 
   const remove = async (chipId: string) => {
     try {
@@ -92,7 +105,10 @@ export default function EditableChips({
         );
       })}
       {remaining.length > 0 && (
-        <span className="relative">
+        <span
+          className="relative"
+          onMouseDown={(e) => e.stopPropagation()}
+        >
           <button
             type="button"
             onClick={() => setAdding((v) => !v)}

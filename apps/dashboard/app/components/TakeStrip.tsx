@@ -24,7 +24,7 @@ export default function TakeStrip({
   const router = useRouter();
   const [busyJobId, setBusyJobId] = useState<string | null>(null);
   const [errorByJob, setErrorByJob] = useState<Record<string, string>>({});
-  const [menuFor, setMenuFor] = useState<string | null>(null);
+  const [menuFor, setMenuFor] = useState<{ jobId: string; x: number; y: number } | null>(null);
 
   const selectUrl = `/api/projects/${slug}/entity/${entityType}/${entityId}/select-take`;
   const deleteUrlFor = (jobId: string) =>
@@ -113,7 +113,7 @@ export default function TakeStrip({
               }}
               onContextMenu={(e) => {
                 e.preventDefault();
-                setMenuFor(t.jobId);
+                setMenuFor({ jobId: t.jobId, x: e.clientX, y: e.clientY });
               }}
               disabled={isBusy}
               title={
@@ -140,9 +140,10 @@ export default function TakeStrip({
                 </div>
               )}
             </button>
-            {menuFor === t.jobId && (
+            {menuFor?.jobId === t.jobId && (
               <div
-                className="absolute z-20 top-full mt-1 min-w-[120px] rounded border border-neutral-700 bg-neutral-900 shadow-lg py-1"
+                className="fixed z-50 min-w-[120px] rounded border border-neutral-700 bg-neutral-900 shadow-lg py-1"
+                style={{ left: menuFor.x, top: menuFor.y }}
                 role="menu"
                 onClick={(e) => e.stopPropagation()}
               >
