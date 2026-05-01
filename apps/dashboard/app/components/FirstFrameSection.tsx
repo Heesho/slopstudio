@@ -23,7 +23,7 @@ export default function FirstFrameSection({
       <div className="mt-4 space-y-4">
         <div>
           <p className="text-xs text-neutral-500 mb-1">
-            Prompt (optional — locks composition before video gen)
+            Prompt — ask Claude to draft this
           </p>
           <EditableTextArea
             slug={slug}

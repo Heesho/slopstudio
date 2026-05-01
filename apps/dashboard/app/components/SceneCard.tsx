@@ -1,12 +1,12 @@
-import type { Scene, TakeStatus, VideoTake } from "@/lib/schemas";
+import type { Character, Location, Scene, TakeStatus, VideoTake } from "@/lib/schemas";
 import { mediaUrl } from "@/lib/media";
 import EditableChips from "./editable/EditableChips";
 import EditableNumber from "./editable/EditableNumber";
 import EditableText from "./editable/EditableText";
 import EditableTextArea from "./editable/EditableTextArea";
-import FirstFrameSection from "./FirstFrameSection";
 import SceneAudioBlock from "./SceneAudioBlock";
 import SceneCinematics from "./SceneCinematics";
+import SceneRefsRow from "./SceneRefsRow";
 import StatusChip from "./StatusChip";
 import VideoTakeStrip from "./VideoTakeStrip";
 
@@ -17,6 +17,8 @@ type Props = {
   episodeTitle?: string;
   availableCharacters: { id: string; label: string }[];
   availableLocations: { id: string; label: string }[];
+  characters: Character[];
+  locations: Location[];
 };
 
 function formatDate(iso: string | undefined): string {
@@ -39,6 +41,8 @@ export default function SceneCard({
   episodeTitle,
   availableCharacters,
   availableLocations,
+  characters,
+  locations,
 }: Props) {
   const selectedTake: VideoTake | null =
     scene.takes.find((t) => t.jobId === scene.selectedTakeId) ?? null;
@@ -78,10 +82,6 @@ export default function SceneCard({
             </span>
           </div>
         </div>
-
-        {/* First Frame section — appears above the hero so users can lock
-            composition before the video take strip dominates the layout. */}
-        <FirstFrameSection slug={slug} scene={scene} />
       </div>
 
       {/* Hero video — constrained to a sensible width so 9:16 doesn't dominate */}
@@ -176,6 +176,14 @@ export default function SceneCard({
 
         {/* Cinematics — collapsible, sits just before the footer */}
         <SceneCinematics slug={slug} scene={scene} />
+
+        {/* Refs row — character + location ref images plus first-frame */}
+        <SceneRefsRow
+          slug={slug}
+          scene={scene}
+          characters={characters}
+          locations={locations}
+        />
 
         {/* Footer */}
         {selectedTake?.status === "failed" && selectedTake.error ? (

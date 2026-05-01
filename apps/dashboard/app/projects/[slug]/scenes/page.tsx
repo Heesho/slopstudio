@@ -112,6 +112,8 @@ export default async function ScenesPage(props: {
               episodeTitle={ep?.title}
               availableCharacters={availableCharacters}
               availableLocations={availableLocations}
+              characters={characters}
+              locations={locations}
             />
           );
         })}
