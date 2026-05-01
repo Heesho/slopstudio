@@ -1,9 +1,8 @@
 import Link from "next/link";
-import type { ImageTake, TakeStatus } from "@/lib/schemas";
+import type { ImageTake } from "@/lib/schemas";
 import { mediaUrl } from "@/lib/media";
 import EditableText from "./editable/EditableText";
 import EditableTextArea from "./editable/EditableTextArea";
-import StatusChip from "./StatusChip";
 import TakeStrip from "./TakeStrip";
 
 type Entity = {
@@ -33,7 +32,6 @@ export default function EntityCard({
   appearsInScenes,
 }: Props) {
   const selectedTake = entity.takes.find((t) => t.jobId === entity.selectedTakeId) ?? null;
-  const status: TakeStatus = selectedTake?.status ?? "pending";
   const heroSrc = selectedTake?.imagePath ? mediaUrl(slug, selectedTake.imagePath) : null;
 
   const sceneQueryKey = entityType === "characters" ? "character" : "location";
@@ -54,23 +52,20 @@ export default function EntityCard({
       </div>
 
       <div className="p-4 space-y-3">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <EditableText
-              slug={slug}
-              type={entityType}
-              id={entity.id}
-              field="name"
-              value={entity.name}
-              className="text-lg font-semibold"
-            />
-          </div>
-          <StatusChip status={status} />
+        <div className="flex-1 min-w-0">
+          <EditableText
+            slug={slug}
+            type={entityType}
+            id={entity.id}
+            field="name"
+            value={entity.name}
+            className="block w-full truncate text-lg font-semibold"
+          />
         </div>
 
         <details>
-          <summary className="cursor-pointer text-xs uppercase tracking-wider text-neutral-400 select-none">
-            Image prompt
+          <summary className="cursor-pointer text-xs uppercase tracking-wider text-neutral-400 hover:text-neutral-200 select-none">
+            Prompt
           </summary>
           <div className="mt-2 text-sm text-neutral-300">
             <EditableTextArea
@@ -86,7 +81,7 @@ export default function EntityCard({
 
         {description !== undefined && (
           <details>
-            <summary className="cursor-pointer text-xs uppercase tracking-wider text-neutral-400 select-none">
+            <summary className="cursor-pointer text-xs uppercase tracking-wider text-neutral-400 hover:text-neutral-200 select-none">
               Description
             </summary>
             <div className="mt-2 text-sm text-neutral-300">
@@ -104,7 +99,7 @@ export default function EntityCard({
 
         {entityType === "characters" && voice !== undefined && (
           <details>
-            <summary className="cursor-pointer text-xs uppercase tracking-wider text-neutral-400 select-none">
+            <summary className="cursor-pointer text-xs uppercase tracking-wider text-neutral-400 hover:text-neutral-200 select-none">
               Voice
             </summary>
             <div className="mt-2">

@@ -16,19 +16,6 @@ type Props = {
   locations: Location[];
 };
 
-function formatDate(iso: string | undefined): string {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
 export default function SceneCard({
   slug,
   scene,
@@ -80,7 +67,7 @@ export default function SceneCard({
       </div>
 
       <div className="p-3 space-y-3">
-        {/* Header — title under the clip */}
+        {/* Header — title under the clip; truncates if too long */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <EditableText
@@ -89,7 +76,7 @@ export default function SceneCard({
               id={scene.id}
               field="title"
               value={scene.title}
-              className="text-base font-semibold"
+              className="block w-full truncate text-base font-semibold"
             />
             {episodeTitle && (
               <p className="text-[11px] text-neutral-500 mt-0.5 truncate">{episodeTitle}</p>
@@ -102,7 +89,7 @@ export default function SceneCard({
           </div>
         </div>
 
-        {/* Scene prompt — collapsed by default */}
+        {/* Prompt */}
         <details className="group">
           <summary className="cursor-pointer text-xs uppercase tracking-wider text-neutral-400 hover:text-neutral-200 select-none">
             Prompt
@@ -119,6 +106,9 @@ export default function SceneCard({
           </div>
         </details>
 
+        {/* Cinematics */}
+        <SceneCinematics slug={slug} scene={scene} />
+
         {/* Duration */}
         <div className="flex items-center gap-1.5 text-xs text-neutral-500">
           <span>Duration</span>
@@ -134,7 +124,7 @@ export default function SceneCard({
           <span>s</span>
         </div>
 
-        {/* Characters chips */}
+        {/* Cast */}
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="text-[10px] uppercase tracking-wider text-neutral-400 mr-0.5">
             Cast
@@ -153,7 +143,7 @@ export default function SceneCard({
           />
         </div>
 
-        {/* Locations chips */}
+        {/* Set */}
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="text-[10px] uppercase tracking-wider text-neutral-400 mr-0.5">
             Set
@@ -172,9 +162,6 @@ export default function SceneCard({
           />
         </div>
 
-        {/* Cinematics — collapsed */}
-        <SceneCinematics slug={slug} scene={scene} />
-
         {/* Takes — at bottom; left-click to select, right-click for menu */}
         <div>
           <p className="text-[10px] uppercase tracking-wider text-neutral-400 mb-1.5">Takes</p>
@@ -186,23 +173,9 @@ export default function SceneCard({
           />
         </div>
 
-        {/* Footer */}
-        {selectedTake?.status === "failed" && selectedTake.error ? (
+        {/* Failed-take error surfaces inline; otherwise no footer */}
+        {selectedTake?.status === "failed" && selectedTake.error && (
           <p className="text-xs text-red-400 break-words">{selectedTake.error}</p>
-        ) : (
-          <p className="text-[11px] text-neutral-500 inline-flex items-center flex-wrap gap-1">
-            <EditableText
-              slug={slug}
-              type="scenes"
-              id={scene.id}
-              field="videoModel"
-              value={scene.videoModel}
-              className="font-mono text-[11px]"
-            />
-            {selectedTake?.generatedAt
-              ? ` · ${formatDate(selectedTake.generatedAt)}`
-              : ""}
-          </p>
         )}
       </div>
     </div>
