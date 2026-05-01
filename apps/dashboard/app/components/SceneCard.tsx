@@ -5,6 +5,7 @@ import EditableNumber from "./editable/EditableNumber";
 import EditableText from "./editable/EditableText";
 import EditableTextArea from "./editable/EditableTextArea";
 import FirstFrameSection from "./FirstFrameSection";
+import SceneAudioBlock from "./SceneAudioBlock";
 import SceneCinematics from "./SceneCinematics";
 import StatusChip from "./StatusChip";
 import VideoTakeStrip from "./VideoTakeStrip";
@@ -139,6 +140,8 @@ export default function SceneCard({
             />
           </div>
         </details>
+
+        <SceneAudioBlock slug={slug} scene={scene} characters={availableCharacters} />
 
         {/* Characters + Locations chips */}
         <div className="flex flex-wrap items-center gap-2">
