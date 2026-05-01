@@ -99,7 +99,9 @@ export const EDITABLE_FIELDS: Record<EntityType, readonly string[]> = {
   scenes: [
     "title",
     "prompt",
-    "narration",
+    "audioMode",
+    "audioText",
+    "speakerCharacterId",
     "duration",
     "videoModel",
     "characters",

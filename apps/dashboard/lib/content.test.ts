@@ -102,7 +102,6 @@ describe("content readers", () => {
       order: 0,
       title: "T",
       prompt: "p",
-      narration: "n",
       characters: [],
       locations: [],
       duration: 6,

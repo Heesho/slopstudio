@@ -80,7 +80,6 @@ describe("schemas", () => {
       order: 3,
       title: "First Hunt",
       prompt: "Anomalocaris hunts",
-      narration: "Narration text",
       characters: ["anomalocaris"],
       locations: ["burgess"],
       duration: 6,
@@ -99,7 +98,6 @@ describe("schemas", () => {
         order: -1,
         title: "t",
         prompt: "p",
-        narration: "n",
         characters: [],
         locations: [],
         duration: 1,
@@ -175,7 +173,7 @@ describe("cinematic + first-frame additions", () => {
 
   it("Scene cinematic fields are all optional", () => {
     const minimal = {
-      id: "s1", episodeId: "e1", order: 0, title: "T", prompt: "p", narration: "n",
+      id: "s1", episodeId: "e1", order: 0, title: "T", prompt: "p",
       characters: [], locations: [], duration: 6, videoModel: "v",
       takes: [], selectedTakeId: null,
     };
@@ -189,7 +187,7 @@ describe("cinematic + first-frame additions", () => {
 
   it("Scene accepts cinematic overrides", () => {
     const valid = {
-      id: "s1", episodeId: "e1", order: 0, title: "T", prompt: "p", narration: "n",
+      id: "s1", episodeId: "e1", order: 0, title: "T", prompt: "p",
       characters: [], locations: [], duration: 6, videoModel: "v",
       takes: [], selectedTakeId: null,
       genre: "noir", focalLength: "35mm",
@@ -201,7 +199,7 @@ describe("cinematic + first-frame additions", () => {
 
   it("Scene accepts a first-frame take", () => {
     const valid = {
-      id: "s1", episodeId: "e1", order: 0, title: "T", prompt: "p", narration: "n",
+      id: "s1", episodeId: "e1", order: 0, title: "T", prompt: "p",
       characters: [], locations: [], duration: 6, videoModel: "v",
       takes: [], selectedTakeId: null,
       firstFramePrompt: "wide opening shot",
@@ -226,7 +224,6 @@ describe("SceneSchema audioMode", () => {
     order: 0,
     title: "x",
     prompt: "p",
-    narration: "old", // still present in this task — dropped in Task 5
     characters: [],
     locations: [],
     duration: 8,
@@ -347,7 +344,7 @@ describe("DnaSchema narratorVoice", () => {
 
 describe("SceneSchema duration clamp", () => {
   const baseScene = {
-    id: "s1", episodeId: "ep-1", order: 0, title: "x", prompt: "p", narration: "",
+    id: "s1", episodeId: "ep-1", order: 0, title: "x", prompt: "p",
     characters: [], locations: [], videoModel: "seedance_2_0", takes: [], selectedTakeId: null,
     audioMode: "none", audioText: null, speakerCharacterId: null,
   };

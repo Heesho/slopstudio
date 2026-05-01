@@ -11,7 +11,6 @@ describe("migrateSceneToV02", () => {
     expect(out.audioMode).toBe("narration");
     expect(out.audioText).toBe("for three billion years");
     expect(out.speakerCharacterId).toBeNull();
-    expect(out.narration).toBe("for three billion years"); // kept until Task 5
   });
 
   it("converts empty narration into audioMode='none'", () => {
@@ -21,9 +20,15 @@ describe("migrateSceneToV02", () => {
     expect(out.speakerCharacterId).toBeNull();
   });
 
-  it("is idempotent — already-migrated scenes pass through unchanged", () => {
-    const already = { id: "s1", narration: "x", audioMode: "narration", audioText: "x", speakerCharacterId: null };
-    expect(migrateSceneToV02(already)).toEqual(already);
+  it("is idempotent — already-migrated scenes pass through unchanged (narration stripped)", () => {
+    const input = { id: "s1", narration: "x", audioMode: "narration", audioText: "x", speakerCharacterId: null };
+    const expected = { id: "s1", audioMode: "narration", audioText: "x", speakerCharacterId: null };
+    expect(migrateSceneToV02(input)).toEqual(expected);
+  });
+
+  it("strips narration from output", () => {
+    const out = migrateSceneToV02({ id: "s1", narration: "hello" });
+    expect("narration" in out).toBe(false);
   });
 });
 

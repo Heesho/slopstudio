@@ -140,21 +140,6 @@ export default function SceneCard({
           </div>
         </details>
 
-        {/* Narration */}
-        <div className="border-l-2 border-neutral-700 pl-3">
-          <p className="text-xs uppercase tracking-wider text-neutral-400">Narration</p>
-          <div className="mt-1 italic text-neutral-200">
-            <EditableTextArea
-              slug={slug}
-              type="scenes"
-              id={scene.id}
-              field="narration"
-              value={scene.narration}
-              rows={2}
-            />
-          </div>
-        </div>
-
         {/* Characters + Locations chips */}
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs uppercase tracking-wider text-neutral-400 mr-1">

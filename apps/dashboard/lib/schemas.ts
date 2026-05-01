@@ -97,7 +97,6 @@ export const SceneSchema = z
     order: z.number().int().nonnegative(),
     title: z.string(),
     prompt: z.string(),
-    narration: z.string(), // deprecated — dropped in Task 5
     audioMode: z.enum(["narration", "dialogue", "none"]).default("none"),
     audioText: z.string().nullable().default(null),
     speakerCharacterId: z.string().nullable().default(null),

@@ -107,7 +107,6 @@ describe("selectTake", () => {
         order: 0,
         title: "T",
         prompt: "p",
-        narration: "n",
         characters: [],
         locations: [],
         duration: 6,
@@ -292,7 +291,7 @@ describe("deleteTake", () => {
     await fs.writeFile(
       path.join(projectDir, "scenes", `${id}.json`),
       JSON.stringify({
-        id, episodeId: "ep-1", order: 0, title: "T", prompt: "p", narration: "n",
+        id, episodeId: "ep-1", order: 0, title: "T", prompt: "p",
         characters: [], locations: [], duration: 6, videoModel: "m",
         takes: [{ jobId, videoPath: `media/scenes/${id}/${jobId}.mp4`, status: "done", generatedAt: "2026-04-28T12:00:00Z" }],
         selectedTakeId: jobId,
@@ -372,7 +371,7 @@ describe("updateEntityField", () => {
   it("updates an array field on a scene", async () => {
     const id = "s1";
     await fs.writeFile(path.join(projectDir, "scenes", `${id}.json`), JSON.stringify({
-      id, episodeId: "e1", order: 0, title: "T", prompt: "p", narration: "n",
+      id, episodeId: "e1", order: 0, title: "T", prompt: "p",
       characters: ["anomalocaris"], locations: [], duration: 6, videoModel: "v",
       takes: [], selectedTakeId: null,
     }));
@@ -395,7 +394,7 @@ describe("updateEntityField", () => {
   it("rejects an invalid value via Zod (negative duration)", async () => {
     const id = "s1";
     await fs.writeFile(path.join(projectDir, "scenes", `${id}.json`), JSON.stringify({
-      id, episodeId: "e1", order: 0, title: "T", prompt: "p", narration: "n",
+      id, episodeId: "e1", order: 0, title: "T", prompt: "p",
       characters: [], locations: [], duration: 6, videoModel: "v",
       takes: [], selectedTakeId: null,
     }));
@@ -443,7 +442,7 @@ describe("selectTake / deleteTake on firstFrameTakes", () => {
     const id = "s1";
     const jobId = "550e8400-e29b-41d4-a716-446655440000";
     await fs.writeFile(path.join(projectDir, "scenes", `${id}.json`), JSON.stringify({
-      id, episodeId: "e1", order: 0, title: "T", prompt: "p", narration: "n",
+      id, episodeId: "e1", order: 0, title: "T", prompt: "p",
       characters: [], locations: [], duration: 6, videoModel: "v",
       takes: [], selectedTakeId: null,
       firstFramePrompt: "wide opening",
@@ -465,7 +464,7 @@ describe("selectTake / deleteTake on firstFrameTakes", () => {
     const filePath = `media/scenes/s1/firstframe-${jobId}.png`;
     await fs.writeFile(path.join(mediaRoot, "scenes", id, `firstframe-${jobId}.png`), "fake-png");
     await fs.writeFile(path.join(projectDir, "scenes", `${id}.json`), JSON.stringify({
-      id, episodeId: "e1", order: 0, title: "T", prompt: "p", narration: "n",
+      id, episodeId: "e1", order: 0, title: "T", prompt: "p",
       characters: [], locations: [], duration: 6, videoModel: "v",
       takes: [], selectedTakeId: null,
       firstFramePrompt: "wide opening",
@@ -498,7 +497,7 @@ describe("selectTake / deleteTake on firstFrameTakes", () => {
     const id = "s1";
     const jobId = "660e8400-e29b-41d4-a716-446655440000";
     await fs.writeFile(path.join(projectDir, "scenes", `${id}.json`), JSON.stringify({
-      id, episodeId: "e1", order: 0, title: "T", prompt: "p", narration: "n",
+      id, episodeId: "e1", order: 0, title: "T", prompt: "p",
       characters: [], locations: [], duration: 6, videoModel: "v",
       takes: [{ jobId, videoPath: "media/scenes/s1/video.mp4", status: "done", generatedAt: "..." }],
       selectedTakeId: null,
