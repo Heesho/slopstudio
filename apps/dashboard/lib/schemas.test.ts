@@ -218,3 +218,88 @@ describe("cinematic + first-frame additions", () => {
     expect(parsed.firstFrameSelectedTakeId).toBe("550e8400-e29b-41d4-a716-446655440000");
   });
 });
+
+describe("SceneSchema audioMode", () => {
+  const baseScene = {
+    id: "s1",
+    episodeId: "ep-1",
+    order: 0,
+    title: "x",
+    prompt: "p",
+    narration: "old", // still present in this task — dropped in Task 5
+    characters: [],
+    locations: [],
+    duration: 8,
+    videoModel: "seedance_2_0",
+    takes: [],
+    selectedTakeId: null,
+  };
+
+  it("defaults audioMode to 'none' with both audio fields null", () => {
+    const parsed = SceneSchema.parse(baseScene);
+    expect(parsed.audioMode).toBe("none");
+    expect(parsed.audioText).toBeNull();
+    expect(parsed.speakerCharacterId).toBeNull();
+  });
+
+  it("accepts audioMode='narration' with audioText", () => {
+    const parsed = SceneSchema.parse({
+      ...baseScene,
+      audioMode: "narration",
+      audioText: "for three billion years…",
+      speakerCharacterId: null,
+    });
+    expect(parsed.audioMode).toBe("narration");
+    expect(parsed.audioText).toBe("for three billion years…");
+  });
+
+  it("rejects audioMode='narration' without audioText", () => {
+    expect(() =>
+      SceneSchema.parse({ ...baseScene, audioMode: "narration", audioText: null, speakerCharacterId: null }),
+    ).toThrow();
+  });
+
+  it("rejects audioMode='narration' with a speakerCharacterId", () => {
+    expect(() =>
+      SceneSchema.parse({
+        ...baseScene,
+        audioMode: "narration",
+        audioText: "hi",
+        speakerCharacterId: "trilobite",
+      }),
+    ).toThrow();
+  });
+
+  it("accepts audioMode='dialogue' with audioText + speakerCharacterId", () => {
+    const parsed = SceneSchema.parse({
+      ...baseScene,
+      audioMode: "dialogue",
+      audioText: "look out!",
+      speakerCharacterId: "anomalocaris",
+    });
+    expect(parsed.audioMode).toBe("dialogue");
+    expect(parsed.speakerCharacterId).toBe("anomalocaris");
+  });
+
+  it("rejects audioMode='dialogue' without speakerCharacterId", () => {
+    expect(() =>
+      SceneSchema.parse({
+        ...baseScene,
+        audioMode: "dialogue",
+        audioText: "x",
+        speakerCharacterId: null,
+      }),
+    ).toThrow();
+  });
+
+  it("rejects audioMode='none' with non-null audioText", () => {
+    expect(() =>
+      SceneSchema.parse({
+        ...baseScene,
+        audioMode: "none",
+        audioText: "x",
+        speakerCharacterId: null,
+      }),
+    ).toThrow();
+  });
+});
