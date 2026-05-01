@@ -55,7 +55,7 @@ export const DnaSchema = z.object({
   title: z.string(),
   concept: z.string(),
   stylePrompt: z.string(),
-  narratorVoice: z.string(),
+  narratorVoice: z.string().nullable(),
   aspectRatio: z.string(),
   videoModel: z.string(),
   characterImageModel: z.string(),
@@ -76,6 +76,7 @@ export const CharacterSchema = z.object({
   imageModel: z.string(),
   takes: z.array(ImageTake),
   selectedTakeId: z.string().uuid().nullable(),
+  voice: z.string().nullable().default(null),
 });
 export type Character = z.infer<typeof CharacterSchema>;
 
@@ -102,7 +103,7 @@ export const SceneSchema = z
     speakerCharacterId: z.string().nullable().default(null),
     characters: z.array(z.string()),
     locations: z.array(z.string()),
-    duration: z.number().int().positive(),
+    duration: z.number().int().min(4).max(15),
     videoModel: z.string(),
     takes: z.array(VideoTake),
     selectedTakeId: z.string().uuid().nullable(),

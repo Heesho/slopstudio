@@ -303,3 +303,64 @@ describe("SceneSchema audioMode", () => {
     ).toThrow();
   });
 });
+
+describe("CharacterSchema voice", () => {
+  const baseChar = {
+    id: "anom",
+    name: "Anomalocaris",
+    imagePrompt: "x",
+    description: "y",
+    imageModel: "nano_banana_2",
+    takes: [],
+    selectedTakeId: null,
+  };
+
+  it("defaults voice to null", () => {
+    const parsed = CharacterSchema.parse(baseChar);
+    expect(parsed.voice).toBeNull();
+  });
+
+  it("accepts free-text voice", () => {
+    const parsed = CharacterSchema.parse({ ...baseChar, voice: "gruff, gravelly" });
+    expect(parsed.voice).toBe("gruff, gravelly");
+  });
+});
+
+describe("DnaSchema narratorVoice", () => {
+  const baseDna = {
+    title: "x", concept: "y", stylePrompt: "z",
+    aspectRatio: "9:16", videoModel: "seedance_2_0",
+    characterImageModel: "m", characterRefAspectRatio: "16:9", characterRefTemplate: "t",
+    locationImageModel: "m", locationRefAspectRatio: "16:9", locationRefTemplate: "t",
+  };
+
+  it("accepts narratorVoice = null", () => {
+    const parsed = DnaSchema.parse({ ...baseDna, narratorVoice: null });
+    expect(parsed.narratorVoice).toBeNull();
+  });
+
+  it("accepts narratorVoice as a string", () => {
+    const parsed = DnaSchema.parse({ ...baseDna, narratorVoice: "Attenborough-style" });
+    expect(parsed.narratorVoice).toBe("Attenborough-style");
+  });
+});
+
+describe("SceneSchema duration clamp", () => {
+  const baseScene = {
+    id: "s1", episodeId: "ep-1", order: 0, title: "x", prompt: "p", narration: "",
+    characters: [], locations: [], videoModel: "seedance_2_0", takes: [], selectedTakeId: null,
+  };
+
+  it("accepts duration in [4, 15]", () => {
+    expect(SceneSchema.parse({ ...baseScene, duration: 4 }).duration).toBe(4);
+    expect(SceneSchema.parse({ ...baseScene, duration: 15 }).duration).toBe(15);
+  });
+
+  it("rejects duration < 4", () => {
+    expect(() => SceneSchema.parse({ ...baseScene, duration: 3 })).toThrow();
+  });
+
+  it("rejects duration > 15", () => {
+    expect(() => SceneSchema.parse({ ...baseScene, duration: 16 })).toThrow();
+  });
+});
