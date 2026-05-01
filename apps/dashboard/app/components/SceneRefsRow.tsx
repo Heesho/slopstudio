@@ -31,17 +31,21 @@ export default function SceneRefsRow({ slug, scene, characters, locations }: Pro
 
   return (
     <div className="space-y-3">
-      <p className="text-xs uppercase tracking-wider text-neutral-400">Refs</p>
-      <div className="flex flex-wrap gap-3">
-        {linkedChars.map((c) => {
-          const sel = c.takes.find((t) => t.jobId === c.selectedTakeId);
-          return <div key={c.id}>{refThumb(slug, c.name, sel?.imagePath)}</div>;
-        })}
-        {linkedLocs.map((l) => {
-          const sel = l.takes.find((t) => t.jobId === l.selectedTakeId);
-          return <div key={l.id}>{refThumb(slug, l.name, sel?.imagePath)}</div>;
-        })}
-      </div>
+      {(linkedChars.length > 0 || linkedLocs.length > 0) && (
+        <>
+          <p className="text-xs uppercase tracking-wider text-neutral-400">Refs</p>
+          <div className="flex flex-wrap gap-3">
+            {linkedChars.map((c) => {
+              const sel = c.takes.find((t) => t.jobId === c.selectedTakeId);
+              return <div key={c.id}>{refThumb(slug, c.name, sel?.imagePath)}</div>;
+            })}
+            {linkedLocs.map((l) => {
+              const sel = l.takes.find((t) => t.jobId === l.selectedTakeId);
+              return <div key={l.id}>{refThumb(slug, l.name, sel?.imagePath)}</div>;
+            })}
+          </div>
+        </>
+      )}
       <FirstFrameSection slug={slug} scene={scene} />
     </div>
   );
