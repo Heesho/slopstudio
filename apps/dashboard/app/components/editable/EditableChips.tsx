@@ -71,14 +71,14 @@ export default function EditableChips({
         return (
           <span
             key={chipId}
-            className="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-neutral-800 text-sm text-neutral-200 hover:bg-neutral-700 transition-colors"
+            className="inline-flex items-center gap-2 px-2 py-1 rounded bg-neutral-800 text-xs text-neutral-200 hover:bg-neutral-700 transition-colors"
           >
             {opt?.imagePath && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={mediaUrl(slug, opt.imagePath)}
                 alt=""
-                className="w-6 h-6 rounded object-cover"
+                className="w-9 h-9 rounded object-cover"
               />
             )}
             {chipHref ? (
@@ -113,7 +113,7 @@ export default function EditableChips({
             type="button"
             onClick={() => setAdding((v) => !v)}
             disabled={busy}
-            className="inline-flex items-center px-2.5 py-1 rounded border border-dashed border-neutral-700 text-sm text-neutral-400 hover:text-neutral-200 hover:border-neutral-500 transition-colors"
+            className="inline-flex items-center h-11 px-3 rounded border border-dashed border-neutral-700 text-xs text-neutral-400 hover:text-neutral-200 hover:border-neutral-500 transition-colors"
             aria-label="Add"
           >
             <Plus size={14} className="mr-0.5" /> add
