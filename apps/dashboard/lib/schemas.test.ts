@@ -289,6 +289,17 @@ describe("SceneSchema audioMode", () => {
     ).toThrow();
   });
 
+  it("rejects audioMode='dialogue' with empty-string speakerCharacterId", () => {
+    expect(() =>
+      SceneSchema.parse({
+        ...baseScene,
+        audioMode: "dialogue",
+        audioText: "x",
+        speakerCharacterId: "",
+      }),
+    ).toThrow();
+  });
+
   it("rejects audioMode='none' with non-null audioText", () => {
     expect(() =>
       SceneSchema.parse({

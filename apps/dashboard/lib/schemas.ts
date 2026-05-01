@@ -123,7 +123,7 @@ export const SceneSchema = z
       if (scene.audioText === null) {
         ctx.addIssue({ code: "custom", message: "audioText required when audioMode='dialogue'", path: ["audioText"] });
       }
-      if (scene.speakerCharacterId === null) {
+      if (scene.speakerCharacterId === null || scene.speakerCharacterId === "") {
         ctx.addIssue({ code: "custom", message: "speakerCharacterId required when audioMode='dialogue'", path: ["speakerCharacterId"] });
       }
     } else {
