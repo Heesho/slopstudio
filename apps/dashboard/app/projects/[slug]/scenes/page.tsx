@@ -75,7 +75,10 @@ export default async function ScenesPage(props: {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-6">Scenes</h1>
+      <h1 className="text-2xl font-semibold">Scenes</h1>
+      <p className="mt-1 mb-6 text-sm text-neutral-400">
+        Shots that compose an episode. Conditioned on character + location refs.
+      </p>
       {(params.character || params.location) && (
         <div className="text-xs text-neutral-400 mb-3">
           {params.character && (

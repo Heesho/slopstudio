@@ -27,7 +27,10 @@ export default async function CharactersPage({
   }
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-6">Characters</h1>
+      <h1 className="text-2xl font-semibold">Characters</h1>
+      <p className="mt-1 mb-6 text-sm text-neutral-400">
+        Recurring beings. Lock a reference take to use across scenes.
+      </p>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {characters.map((c) => (
           <EntityCard

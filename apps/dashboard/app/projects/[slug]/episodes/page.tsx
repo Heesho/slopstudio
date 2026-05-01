@@ -61,7 +61,10 @@ export default async function EpisodesPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-6">Episodes</h1>
+      <h1 className="text-2xl font-semibold">Episodes</h1>
+      <p className="mt-1 mb-6 text-sm text-neutral-400">
+        Ordered scenes, stitched together.
+      </p>
       {sortedEpisodes.map((episode) => {
         const epScenes = scenes
           .filter((s) => s.episodeId === episode.id)

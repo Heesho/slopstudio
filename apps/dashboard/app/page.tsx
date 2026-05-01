@@ -10,7 +10,12 @@ export default async function Home() {
   return (
     <div className="max-w-6xl mx-auto px-6 py-8">
       <header className="mb-8 flex items-baseline justify-between">
-        <h1 className="font-mono text-lg tracking-wide text-neutral-100">{studio.name}</h1>
+        <div>
+          <h1 className="font-mono text-lg tracking-wide text-neutral-100">{studio.name}</h1>
+          <p className="mt-1 text-xs text-neutral-500 font-mono">
+            Local-first AI video studio. One project per card.
+          </p>
+        </div>
         <p className="text-xs text-neutral-500 font-mono">
           {projects.length} project{projects.length === 1 ? "" : "s"}
         </p>
