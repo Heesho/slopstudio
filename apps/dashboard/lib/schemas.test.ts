@@ -349,6 +349,7 @@ describe("SceneSchema duration clamp", () => {
   const baseScene = {
     id: "s1", episodeId: "ep-1", order: 0, title: "x", prompt: "p", narration: "",
     characters: [], locations: [], videoModel: "seedance_2_0", takes: [], selectedTakeId: null,
+    audioMode: "none", audioText: null, speakerCharacterId: null,
   };
 
   it("accepts duration in [4, 15]", () => {
@@ -362,5 +363,13 @@ describe("SceneSchema duration clamp", () => {
 
   it("rejects duration > 15", () => {
     expect(() => SceneSchema.parse({ ...baseScene, duration: 16 })).toThrow();
+  });
+
+  it("rejects non-integer duration", () => {
+    expect(() => SceneSchema.parse({ ...baseScene, duration: 6.5 })).toThrow();
+  });
+
+  it("rejects NaN duration", () => {
+    expect(() => SceneSchema.parse({ ...baseScene, duration: NaN })).toThrow();
   });
 });

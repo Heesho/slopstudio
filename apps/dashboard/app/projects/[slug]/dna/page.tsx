@@ -123,7 +123,7 @@ export default async function DnaPage({
                 type="dna"
                 id="_"
                 field="narratorVoice"
-                value={dna.narratorVoice}
+                value={dna.narratorVoice ?? ""}
               />
             </dd>
           </div>
