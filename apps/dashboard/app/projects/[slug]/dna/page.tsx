@@ -121,18 +121,6 @@ export default async function DnaPage({
             </dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-wider text-neutral-400">Narrator Voice</dt>
-            <dd className="mt-1 text-sm text-neutral-100">
-              <EditableTextArea
-                slug={slug}
-                type="dna"
-                id="_"
-                field="narratorVoice"
-                value={dna.narratorVoice ?? ""}
-              />
-            </dd>
-          </div>
-          <div>
             <dt className="text-xs uppercase tracking-wider text-neutral-400">
               Character Image Model
             </dt>

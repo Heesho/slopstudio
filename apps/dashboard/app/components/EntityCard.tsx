@@ -19,6 +19,7 @@ type Props = {
   entityType: "characters" | "locations";
   prompt: string;
   description?: string;
+  voice?: string | null;
   appearsInScenes?: number;
 };
 
@@ -28,6 +29,7 @@ export default function EntityCard({
   entityType,
   prompt,
   description,
+  voice,
   appearsInScenes,
 }: Props) {
   const selectedTake = entity.takes.find((t) => t.jobId === entity.selectedTakeId) ?? null;
@@ -95,6 +97,25 @@ export default function EntityCard({
                 field="description"
                 value={description}
                 rows={3}
+              />
+            </div>
+          </details>
+        )}
+
+        {entityType === "characters" && voice !== undefined && (
+          <details>
+            <summary className="cursor-pointer text-xs uppercase tracking-wider text-neutral-400 select-none">
+              Voice
+            </summary>
+            <div className="mt-2">
+              <EditableTextArea
+                slug={slug}
+                type="characters"
+                id={entity.id}
+                field="voice"
+                value={voice ?? ""}
+                placeholder="e.g. soft Ohio accent, mid-20s"
+                rows={2}
               />
             </div>
           </details>

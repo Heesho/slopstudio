@@ -13,7 +13,6 @@ type Props = {
   entityId: string;
   takes: ImageTake[];
   selectedTakeId: string | null;
-  collection?: "takes" | "firstFrameTakes";
 };
 
 export default function TakeStrip({
@@ -22,22 +21,14 @@ export default function TakeStrip({
   entityId,
   takes,
   selectedTakeId,
-  collection = "takes",
 }: Props) {
   const router = useRouter();
   const [busyJobId, setBusyJobId] = useState<string | null>(null);
   const [errorByJob, setErrorByJob] = useState<Record<string, string>>({});
 
-  // URL switch: default routes hit select-take / take/[jobId]; firstFrameTakes
-  // hits the parallel select-first-frame / first-frame/[jobId] routes (Task 6).
-  const selectUrl =
-    collection === "firstFrameTakes"
-      ? `/api/projects/${slug}/entity/${entityType}/${entityId}/select-first-frame`
-      : `/api/projects/${slug}/entity/${entityType}/${entityId}/select-take`;
+  const selectUrl = `/api/projects/${slug}/entity/${entityType}/${entityId}/select-take`;
   const deleteUrlFor = (jobId: string) =>
-    collection === "firstFrameTakes"
-      ? `/api/projects/${slug}/entity/${entityType}/${entityId}/first-frame/${jobId}`
-      : `/api/projects/${slug}/entity/${entityType}/${entityId}/take/${jobId}`;
+    `/api/projects/${slug}/entity/${entityType}/${entityId}/take/${jobId}`;
 
   if (takes.length === 0) {
     return (

@@ -55,7 +55,6 @@ export const DnaSchema = z.object({
   title: z.string(),
   concept: z.string(),
   stylePrompt: z.string(),
-  narratorVoice: z.string().nullable(),
   aspectRatio: z.string(),
   videoModel: z.string(),
   characterImageModel: z.string(),
@@ -90,51 +89,20 @@ export const LocationSchema = z.object({
 });
 export type Location = z.infer<typeof LocationSchema>;
 
-export const SceneSchema = z
-  .object({
-    id: z.string(),
-    episodeId: z.string(),
-    order: z.number().int().nonnegative(),
-    title: z.string(),
-    prompt: z.string(),
-    audioMode: z.enum(["narration", "dialogue", "none"]).default("none"),
-    audioText: z.string().nullable().default(null),
-    speakerCharacterId: z.string().nullable().default(null),
-    characters: z.array(z.string()),
-    locations: z.array(z.string()),
-    duration: z.number().int().min(4).max(15),
-    videoModel: z.string(),
-    takes: z.array(VideoTake),
-    selectedTakeId: z.string().uuid().nullable(),
-    ...cinematicOverrides,
-    firstFramePrompt: z.string().optional().default(""),
-    firstFrameTakes: z.array(ImageTake).default([]),
-    firstFrameSelectedTakeId: z.string().uuid().nullable().default(null),
-  })
-  .superRefine((scene, ctx) => {
-    if (scene.audioMode === "narration") {
-      if (scene.audioText === null) {
-        ctx.addIssue({ code: "custom", message: "audioText required when audioMode='narration'", path: ["audioText"] });
-      }
-      if (scene.speakerCharacterId !== null) {
-        ctx.addIssue({ code: "custom", message: "speakerCharacterId must be null when audioMode='narration'", path: ["speakerCharacterId"] });
-      }
-    } else if (scene.audioMode === "dialogue") {
-      if (scene.audioText === null) {
-        ctx.addIssue({ code: "custom", message: "audioText required when audioMode='dialogue'", path: ["audioText"] });
-      }
-      if (scene.speakerCharacterId === null || scene.speakerCharacterId === "") {
-        ctx.addIssue({ code: "custom", message: "speakerCharacterId required when audioMode='dialogue'", path: ["speakerCharacterId"] });
-      }
-    } else {
-      if (scene.audioText !== null) {
-        ctx.addIssue({ code: "custom", message: "audioText must be null when audioMode='none'", path: ["audioText"] });
-      }
-      if (scene.speakerCharacterId !== null) {
-        ctx.addIssue({ code: "custom", message: "speakerCharacterId must be null when audioMode='none'", path: ["speakerCharacterId"] });
-      }
-    }
-  });
+export const SceneSchema = z.object({
+  id: z.string(),
+  episodeId: z.string(),
+  order: z.number().int().nonnegative(),
+  title: z.string(),
+  prompt: z.string(),
+  characters: z.array(z.string()),
+  locations: z.array(z.string()),
+  duration: z.number().int().min(4).max(15),
+  videoModel: z.string(),
+  takes: z.array(VideoTake),
+  selectedTakeId: z.string().uuid().nullable(),
+  ...cinematicOverrides,
+});
 export type Scene = z.infer<typeof SceneSchema>;
 
 export const EpisodeSchema = z.object({

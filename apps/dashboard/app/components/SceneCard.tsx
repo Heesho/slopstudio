@@ -4,9 +4,7 @@ import EditableChips from "./editable/EditableChips";
 import EditableNumber from "./editable/EditableNumber";
 import EditableText from "./editable/EditableText";
 import EditableTextArea from "./editable/EditableTextArea";
-import SceneAudioBlock from "./SceneAudioBlock";
 import SceneCinematics from "./SceneCinematics";
-import SceneRefsRow from "./SceneRefsRow";
 import StatusChip from "./StatusChip";
 import VideoTakeStrip from "./VideoTakeStrip";
 
@@ -17,6 +15,7 @@ type Props = {
   episodeTitle?: string;
   availableCharacters: { id: string; label: string }[];
   availableLocations: { id: string; label: string }[];
+  // characters and locations remain in props for sub-task 2 (refs/storyboard work).
   characters: Character[];
   locations: Location[];
 };
@@ -41,8 +40,10 @@ export default function SceneCard({
   episodeTitle,
   availableCharacters,
   availableLocations,
-  characters,
-  locations,
+  // characters/locations are accepted but unused here; sub-task 2 will reintroduce
+  // a refs UI that consumes them.
+  characters: _characters,
+  locations: _locations,
 }: Props) {
   const selectedTake: VideoTake | null =
     scene.takes.find((t) => t.jobId === scene.selectedTakeId) ?? null;
@@ -141,8 +142,6 @@ export default function SceneCard({
           </div>
         </details>
 
-        <SceneAudioBlock slug={slug} scene={scene} characters={availableCharacters} />
-
         <div className="flex items-center gap-2">
           <span className="text-xs text-neutral-500">Duration</span>
           <EditableNumber
@@ -190,14 +189,6 @@ export default function SceneCard({
 
         {/* Cinematics — collapsible, sits just before the footer */}
         <SceneCinematics slug={slug} scene={scene} />
-
-        {/* Refs row — character + location ref images plus first-frame */}
-        <SceneRefsRow
-          slug={slug}
-          scene={scene}
-          characters={characters}
-          locations={locations}
-        />
 
         {/* Footer */}
         {selectedTake?.status === "failed" && selectedTake.error ? (

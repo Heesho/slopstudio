@@ -37,7 +37,6 @@ describe("content readers", () => {
       title: "Test",
       concept: "c",
       stylePrompt: "s",
-      narratorVoice: "n",
       aspectRatio: "9:16",
       videoModel: "seedance_2_0",
       characterImageModel: "nano_banana_2",

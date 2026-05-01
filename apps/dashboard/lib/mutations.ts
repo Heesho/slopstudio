@@ -15,13 +15,6 @@ import { assertSafeSlug } from "./studio";
 export const ENTITY_TYPES = ["dna", "characters", "locations", "scenes", "episodes"] as const;
 export type EntityType = (typeof ENTITY_TYPES)[number];
 
-export type TakeCollection = "takes" | "firstFrameTakes";
-
-const SELECTED_KEY: Record<TakeCollection, string> = {
-  takes: "selectedTakeId",
-  firstFrameTakes: "firstFrameSelectedTakeId",
-};
-
 export class EntityValidationError extends Error {
   constructor(message: string) {
     super(message);
@@ -76,7 +69,6 @@ export const EDITABLE_FIELDS: Record<EntityType, readonly string[]> = {
     "title",
     "concept",
     "stylePrompt",
-    "narratorVoice",
     "aspectRatio",
     "videoModel",
     "characterImageModel",
@@ -94,14 +86,11 @@ export const EDITABLE_FIELDS: Record<EntityType, readonly string[]> = {
     "focalLength",
     "aperture",
   ],
-  characters: ["name", "imagePrompt", "description", "imageModel"],
+  characters: ["name", "imagePrompt", "description", "imageModel", "voice"],
   locations: ["name", "imagePrompt", "imageModel"],
   scenes: [
     "title",
     "prompt",
-    "audioMode",
-    "audioText",
-    "speakerCharacterId",
     "duration",
     "videoModel",
     "characters",
@@ -114,7 +103,6 @@ export const EDITABLE_FIELDS: Record<EntityType, readonly string[]> = {
     "lens",
     "focalLength",
     "aperture",
-    "firstFramePrompt",
   ],
   episodes: ["title", "hook"],
 } as const;
@@ -222,13 +210,7 @@ export async function updateEntityField(
   }
   const { file, data } = await readEntity(slug, type, id);
 
-  let updated: Record<string, unknown> = { ...data, [field]: value };
-
-  // Audio-mode coordinated write: dependent fields must be set atomically
-  // because the SceneSchema.superRefine enforces cross-field invariants.
-  if (type === "scenes" && field === "audioMode") {
-    updated = coerceAudioFieldsForMode(updated, value);
-  }
+  const updated: Record<string, unknown> = { ...data, [field]: value };
 
   let validated: unknown;
   try {
@@ -241,41 +223,6 @@ export async function updateEntityField(
   await writeAtomic(file, validated);
 }
 
-function coerceAudioFieldsForMode(
-  scene: Record<string, unknown>,
-  newMode: unknown,
-): Record<string, unknown> {
-  if (newMode === "none") {
-    return { ...scene, audioText: null, speakerCharacterId: null };
-  }
-  if (newMode === "narration") {
-    const audioText =
-      typeof scene.audioText === "string" ? scene.audioText : "";
-    return { ...scene, audioText, speakerCharacterId: null };
-  }
-  if (newMode === "dialogue") {
-    const audioText =
-      typeof scene.audioText === "string" ? scene.audioText : "";
-    const characters = Array.isArray(scene.characters)
-      ? (scene.characters as string[])
-      : [];
-    const currentSpeaker =
-      typeof scene.speakerCharacterId === "string" && scene.speakerCharacterId !== ""
-        ? scene.speakerCharacterId
-        : null;
-    const validCurrent = currentSpeaker !== null && characters.includes(currentSpeaker);
-    if (!validCurrent && characters.length === 0) {
-      throw new EntityValidationError(
-        "cannot set audioMode='dialogue' on a scene with no linked characters",
-      );
-    }
-    const speakerCharacterId = validCurrent ? currentSpeaker : characters[0];
-    return { ...scene, audioText, speakerCharacterId };
-  }
-  // Unknown mode value — let schema validation reject it.
-  return scene;
-}
-
 type TakeEntityType = Exclude<EntityType, "dna" | "episodes">;
 
 export async function selectTake(
@@ -283,26 +230,22 @@ export async function selectTake(
   type: EntityType,
   id: string,
   jobId: string,
-  collection: TakeCollection = "takes",
 ) {
   assertSafeSlug(slug);
   if (type === "dna" || type === "episodes") {
     throw new EntityValidationError(`takes are not supported on ${type}`);
   }
-  if (collection === "firstFrameTakes" && type !== "scenes") {
-    throw new EntityValidationError(`firstFrameTakes only exist on scenes`);
-  }
   const takeType = type as TakeEntityType;
   const { file, data } = await readEntity(slug, takeType, id);
-  const list = (data as Record<string, unknown>)[collection] as
+  const list = (data as Record<string, unknown>).takes as
     | Array<{ jobId: string }>
     | undefined;
   if (!list || !list.some((t) => t.jobId === jobId)) {
     throw new TakeNotFoundError(
-      `take ${jobId} not found in ${collection} on ${type}/${id}`,
+      `take ${jobId} not found in takes on ${type}/${id}`,
     );
   }
-  await writeAtomic(file, { ...data, [SELECTED_KEY[collection]]: jobId });
+  await writeAtomic(file, { ...data, selectedTakeId: jobId });
 }
 
 export async function deleteTake(
@@ -310,19 +253,15 @@ export async function deleteTake(
   type: EntityType,
   id: string,
   jobId: string,
-  collection: TakeCollection = "takes",
 ) {
   assertSafeSlug(slug);
   if (type === "dna" || type === "episodes") {
     throw new EntityValidationError(`takes are not supported on ${type}`);
   }
-  if (collection === "firstFrameTakes" && type !== "scenes") {
-    throw new EntityValidationError(`firstFrameTakes only exist on scenes`);
-  }
 
   const takeType = type as TakeEntityType;
   const { file, data } = await readEntity(slug, takeType, id);
-  const list = (data as Record<string, unknown>)[collection] as
+  const list = (data as Record<string, unknown>).takes as
     | Array<{
         jobId: string;
         imagePath?: string;
@@ -334,13 +273,13 @@ export async function deleteTake(
 
   if (!list) {
     throw new TakeNotFoundError(
-      `collection ${collection} missing on ${type}/${id}`,
+      `takes collection missing on ${type}/${id}`,
     );
   }
   const take = list.find((t) => t.jobId === jobId);
   if (!take) {
     throw new TakeNotFoundError(
-      `take ${jobId} not found in ${collection} on ${type}/${id}`,
+      `take ${jobId} not found in takes on ${type}/${id}`,
     );
   }
 
@@ -368,8 +307,7 @@ export async function deleteTake(
   }
 
   const remaining = list.filter((t) => t.jobId !== jobId);
-  const selectedKey = SELECTED_KEY[collection];
-  const currentSelected = (data as Record<string, unknown>)[selectedKey] as
+  const currentSelected = (data as Record<string, unknown>).selectedTakeId as
     | string
     | null;
 
@@ -385,7 +323,7 @@ export async function deleteTake(
 
   await writeAtomic(file, {
     ...data,
-    [collection]: remaining,
-    [selectedKey]: nextSelected,
+    takes: remaining,
+    selectedTakeId: nextSelected,
   });
 }

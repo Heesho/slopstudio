@@ -40,6 +40,7 @@ export default async function CharactersPage({
             entityType="characters"
             prompt={c.imagePrompt}
             description={c.description}
+            voice={c.voice}
             appearsInScenes={counts.get(c.id) ?? 0}
           />
         ))}

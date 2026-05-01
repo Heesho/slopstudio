@@ -30,7 +30,7 @@ describe("listProjects", () => {
     await fs.writeFile(
       path.join(a, "dna.json"),
       JSON.stringify({
-        title: "Alpha", concept: "c", stylePrompt: "s", narratorVoice: "n",
+        title: "Alpha", concept: "c", stylePrompt: "s",
         aspectRatio: "9:16", videoModel: "v", characterImageModel: "c",
         characterRefAspectRatio: "16:9", characterRefTemplate: "{imagePrompt}",
         locationImageModel: "l", locationRefAspectRatio: "16:9",
