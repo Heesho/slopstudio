@@ -117,6 +117,7 @@ export default function TakeStrip({
                 onClick={() => handleSelect(t.jobId)}
                 disabled={isBusy || isSelected || t.status !== "done"}
                 aria-label="Select this take"
+                title="Lock as the selected take"
                 className="p-1 rounded text-neutral-400 hover:text-emerald-400 hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <Check size={14} />
@@ -126,6 +127,7 @@ export default function TakeStrip({
                 onClick={() => handleDelete(t.jobId)}
                 disabled={isBusy}
                 aria-label="Delete this take"
+                title="Delete this take"
                 className="p-1 rounded text-neutral-400 hover:text-red-400 hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <Trash2 size={14} />
