@@ -43,12 +43,29 @@ The dashboard's `chokidar` watcher picks up new files automatically; refresh the
 
 Same as before the multi-project change — only the on-disk paths moved:
 
-1. Stitch `dna.json.stylePrompt` (and `characterRefTemplate` / `locationRefTemplate` for refs) onto the entity's prompt.
+1. Stitch `dna.json.stylePrompt` (and `characterRefTemplate` / `locationRefTemplate` for refs) onto the entity's prompt. For scene videos, see **Scene prompt assembly** below.
 2. Call `mcp__higgsfield__generate_image` or `mcp__higgsfield__generate_video`.
 3. Poll with `mcp__higgsfield__job_status` until status is `completed`.
 4. Download the resulting URL to `projects/<slug>/media/<type>/<id>/<jobId>.<ext>`.
 5. Append a `take` to the entity JSON with `jobId`, `imagePath`/`videoPath`, `status: "done"`, `generatedAt`.
-6. The dashboard auto-revalidates. The user clicks the green checkmark to select a take; the red bin to delete.
+6. The dashboard auto-revalidates. The user left-clicks a take thumbnail to select it (the selected take fills the hero); right-click opens a menu with **Delete take**.
+
+## Scene prompt assembly
+
+Scenes don't have a separate audio mode — `scene.prompt` is the only prompt that gets sent to the video model. Character voice and personality are stored on each character but **not** auto-substituted; you (the assistant) are responsible for weaving them into the prompt before generation, when relevant.
+
+Before calling `mcp__higgsfield__generate_video` for a scene:
+
+1. Read the scene JSON. Start from `scene.prompt` as the base.
+2. For each id in `scene.characters`, read `characters/<id>.json`. For each you load:
+   - **If the prompt contains dialogue cues** (quoted text, "says", "whispers", "asks", "shouts", "muttered", etc.) **AND** `character.voice` is non-null, weave the voice into the prompt naturally. Example:
+     - Raw: `Allie picks up the kettle and says hello`
+     - Assembled: `Allie (a 24-year-old with a soft Ohio accent) picks up the kettle and says hello`
+   - **If the character's `description` adds context** (personality, behavior, gait, etc.) that the visual ref alone wouldn't carry, you may weave that in too. Use judgment — don't pad the prompt with information the model can already see.
+3. Stitch `dna.stylePrompt` onto the result (it conditions visual style across all scenes).
+4. Pass the assembled prompt to `mcp__higgsfield__generate_video` along with the scene's `videoModel`, `duration`, and the selected reference images for each linked character + location (image-to-video conditioning).
+
+Don't substitute character details that aren't relevant — if the scene is silent or doesn't reference a character's personality, leave them out. The visual ref already establishes appearance.
 
 ## Read before editing
 
