@@ -10,8 +10,14 @@
       "imagePath": "media/characters/anomalocaris/e5de1694-0e4d-423b-88be-6ead3317d860.png",
       "status": "done",
       "generatedAt": "2026-04-29T08:38:58Z"
+    },
+    {
+      "jobId": "922b0a28-850f-468d-b498-3b7fe82fed06",
+      "imagePath": "media/characters/anomalocaris/922b0a28-850f-468d-b498-3b7fe82fed06.png",
+      "status": "done",
+      "generatedAt": "2026-05-02T18:08:00Z"
     }
   ],
-  "selectedTakeId": "e5de1694-0e4d-423b-88be-6ead3317d860",
+  "selectedTakeId": "922b0a28-850f-468d-b498-3b7fe82fed06",
   "voice": null
 }

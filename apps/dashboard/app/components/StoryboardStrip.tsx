@@ -15,8 +15,10 @@ export default function StoryboardStrip({ slug, scenes, episodeId }: Props) {
   }
 
   // Contract: shows scenes in `order` ascending. Sort defensively so callers
-  // don't need to pre-sort.
-  const sortedScenes = [...scenes].sort((a, b) => a.order - b.order);
+  // don't need to pre-sort. Archived scenes are filtered out.
+  const sortedScenes = [...scenes]
+    .filter((s) => !s.archived)
+    .sort((a, b) => a.order - b.order);
 
   return (
     <div className="flex gap-3 overflow-x-auto pb-2">

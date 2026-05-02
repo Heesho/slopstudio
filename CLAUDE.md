@@ -41,14 +41,16 @@ The dashboard's `chokidar` watcher picks up new files automatically; refresh the
 
 ## Generation flow (Higgsfield MCP)
 
-Same as before the multi-project change — only the on-disk paths moved:
+The dashboard renders a loading thumbnail for any take whose `status` is not `done`. To make that loading box visible while a job is running, you MUST append the take to the entity JSON **before** you start polling — not after the download. This applies to characters, locations, and scenes (videos).
 
 1. Stitch `dna.json.stylePrompt` (and `characterRefTemplate` / `locationRefTemplate` for refs) onto the entity's prompt. For scene videos, see **Scene prompt assembly** below.
-2. Call `mcp__higgsfield__generate_image` or `mcp__higgsfield__generate_video`.
-3. Poll with `mcp__higgsfield__job_status` until status is `completed`.
-4. Download the resulting URL to `projects/<slug>/media/<type>/<id>/<jobId>.<ext>`.
-5. Append a `take` to the entity JSON with `jobId`, `imagePath`/`videoPath`, `status: "done"`, `generatedAt`.
-6. The dashboard auto-revalidates. The user left-clicks a take thumbnail to select it (the selected take fills the hero); right-click opens a menu with **Delete take**.
+2. Call `mcp__higgsfield__generate_image` or `mcp__higgsfield__generate_video`. Capture the `jobId` from the response.
+3. **Immediately append a placeholder take to the entity JSON** — `{ "jobId", "status": "generating" }` (no `imagePath`/`videoPath` yet). This is what makes the loading box appear in the strip. Do this in the same turn, before any `job_status` polling.
+4. Poll with `mcp__higgsfield__job_status` until status is `completed`. (You may leave the take's `status` as `generating` throughout polling.)
+5. Download the resulting URL to `projects/<slug>/media/<type>/<id>/<jobId>.<ext>`.
+6. **Update the existing take in place** (match by `jobId`): set `imagePath`/`videoPath`, `status: "done"`, `generatedAt`. Do not append a second entry — the placeholder from step 3 becomes the final take.
+7. On failure, update the same take to `status: "failed"` with an `error` string. Do not delete it; the user can right-click → Delete take.
+8. The dashboard auto-revalidates. The user left-clicks a take thumbnail to select it (the selected take fills the hero); right-click opens a menu with **Delete take**.
 
 ## Scene prompt assembly
 
@@ -66,6 +68,15 @@ Before calling `mcp__higgsfield__generate_video` for a scene:
 4. Pass the assembled prompt to `mcp__higgsfield__generate_video` along with the scene's `videoModel`, `duration`, and the selected reference images for each linked character + location (image-to-video conditioning).
 
 Don't substitute character details that aren't relevant — if the scene is silent or doesn't reference a character's personality, leave them out. The visual ref already establishes appearance.
+
+## Episode story → scenes
+
+Each episode has a `logline` (one-sentence pitch) and `synopsis` (multi-line prose) that describe the arc. The user shapes them on the Episodes page; you read them before scaffolding scenes.
+
+1. **Before scaffolding scenes** for an episode, read `episode.logline` and `episode.synopsis`. If both are empty, ask the user to draft the story first — or offer to draft a synopsis from the hook + DNA, which the user can then edit on the Episodes page before scenes get proposed.
+2. **When proposing scenes** from a synopsis: aim for 4–8 scenes, each scene's prompt should hit a beat the synopsis implies, use existing characters/locations where the synopsis names them, and flag any reference to an entity that doesn't exist yet (so the user can decide whether to create it or rephrase).
+3. **When the user asks to replace existing scenes**, set the old scenes' `archived: true` (don't delete files or media) — they stay on disk with their takes intact, hidden from main views, restorable via the "Archived (N)" disclosure on the Episodes page. New scenes get fresh slugs derived from the new synopsis (e.g., `002-the-impact.json` replacing `002-strike-aftermath.json`); they can share the same `order` value as archived scenes because archived ones are filtered out everywhere.
+4. **Mid-iteration replacement** (replace a single scene at a particular order) follows the same archive-and-replace pattern.
 
 ## Read before editing
 

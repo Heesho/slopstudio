@@ -27,8 +27,8 @@ export default function Header({
     { href: `/projects/${slug}/dna`, label: "DNA" },
     { href: `/projects/${slug}/characters`, label: "Characters" },
     { href: `/projects/${slug}/locations`, label: "Locations" },
-    { href: `/projects/${slug}/scenes`, label: "Scenes" },
     { href: `/projects/${slug}/episodes`, label: "Episodes" },
+    { href: `/projects/${slug}/scenes`, label: "Scenes" },
   ];
   return (
     <header className="border-b border-neutral-800 bg-neutral-950/80 backdrop-blur sticky top-0 z-10">

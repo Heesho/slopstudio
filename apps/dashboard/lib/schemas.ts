@@ -101,6 +101,7 @@ export const SceneSchema = z.object({
   videoModel: z.string(),
   takes: z.array(VideoTake),
   selectedTakeId: z.string().uuid().nullable(),
+  archived: z.boolean().default(false),
   ...cinematicOverrides,
 });
 export type Scene = z.infer<typeof SceneSchema>;
@@ -110,6 +111,8 @@ export const EpisodeSchema = z.object({
   number: z.number().int().positive(),
   title: z.string(),
   hook: z.string(),
+  logline: z.string().default(""),
+  synopsis: z.string().default(""),
   scenes: z.array(z.string()),
 });
 export type Episode = z.infer<typeof EpisodeSchema>;

@@ -243,3 +243,53 @@ describe("SceneSchema duration clamp", () => {
     expect(() => SceneSchema.parse({ ...baseScene, duration: NaN })).toThrow();
   });
 });
+
+describe("EpisodeSchema story fields", () => {
+  const baseEp = {
+    id: "ep-1",
+    number: 1,
+    title: "Birth",
+    hook: "What if...",
+    scenes: [],
+  };
+
+  it("defaults logline and synopsis to empty string", () => {
+    const parsed = EpisodeSchema.parse(baseEp);
+    expect(parsed.logline).toBe("");
+    expect(parsed.synopsis).toBe("");
+  });
+
+  it("accepts populated logline and synopsis", () => {
+    const parsed = EpisodeSchema.parse({
+      ...baseEp,
+      logline: "Apex predators emerge.",
+      synopsis: "Trilobites graze in peace until Anomalocaris arrives.",
+    });
+    expect(parsed.logline).toBe("Apex predators emerge.");
+    expect(parsed.synopsis.length).toBeGreaterThan(0);
+  });
+});
+
+describe("SceneSchema archived flag", () => {
+  const baseScene = {
+    id: "s1", episodeId: "ep-1", order: 0, title: "x", prompt: "p",
+    characters: [], locations: [], duration: 6, videoModel: "v",
+    takes: [], selectedTakeId: null,
+  };
+
+  it("defaults archived to false", () => {
+    const parsed = SceneSchema.parse(baseScene);
+    expect(parsed.archived).toBe(false);
+  });
+
+  it("accepts archived: true", () => {
+    const parsed = SceneSchema.parse({ ...baseScene, archived: true });
+    expect(parsed.archived).toBe(true);
+  });
+
+  it("rejects non-boolean archived", () => {
+    expect(() =>
+      SceneSchema.parse({ ...baseScene, archived: "yes" }),
+    ).toThrow();
+  });
+});

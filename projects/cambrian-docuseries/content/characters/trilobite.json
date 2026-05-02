@@ -10,8 +10,14 @@
       "imagePath": "media/characters/trilobite/fac14cbc-8226-4f0f-bcf5-3a261d28a3ef.png",
       "status": "done",
       "generatedAt": "2026-04-29T08:39:07Z"
+    },
+    {
+      "jobId": "104e9798-64dd-47ae-83bd-90a9753599db",
+      "imagePath": "media/characters/trilobite/104e9798-64dd-47ae-83bd-90a9753599db.png",
+      "status": "done",
+      "generatedAt": "2026-05-02T18:08:01Z"
     }
   ],
-  "selectedTakeId": "fac14cbc-8226-4f0f-bcf5-3a261d28a3ef",
+  "selectedTakeId": "104e9798-64dd-47ae-83bd-90a9753599db",
   "voice": null
 }

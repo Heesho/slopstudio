@@ -1,0 +1,13 @@
+{
+  "id": "004-the-defensive-roll",
+  "episodeId": "ep-1-birth-of-the-predator",
+  "order": 4,
+  "title": "The Defensive Roll",
+  "prompt": "Low-angle shot across the seafloor. A lone trilobite senses motion, its antennae twitching. As an anomalocaris cruises into frame above it, the trilobite curls its segmented body into a tight defensive ball, calcified shell facing outward. The predator circles once, probes the armored sphere with its grasping appendages, then drifts on. The trilobite holds, frozen, until the threat passes.",
+  "characters": ["anomalocaris", "trilobite"],
+  "locations": ["burgess-shallow-sea"],
+  "duration": 8,
+  "videoModel": "seedance_2_0",
+  "takes": [],
+  "selectedTakeId": null
+}

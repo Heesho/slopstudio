@@ -44,7 +44,7 @@ export default async function ScenesPage(props: {
   const episodeMap = new Map(episodes.map((e) => [e.id, e]));
 
   // Apply filters
-  let filtered = scenes;
+  let filtered = scenes.filter((s) => !s.archived);
   if (params.episode) {
     filtered = filtered.filter((s) => s.episodeId === params.episode);
   }

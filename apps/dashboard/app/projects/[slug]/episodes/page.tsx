@@ -1,3 +1,4 @@
+import ArchivedScenesDisclosure from "@/app/components/ArchivedScenesDisclosure";
 import EmptyState from "@/app/components/EmptyState";
 import EditableText from "@/app/components/editable/EditableText";
 import EditableTextArea from "@/app/components/editable/EditableTextArea";
@@ -67,7 +68,10 @@ export default async function EpisodesPage({
       </p>
       {sortedEpisodes.map((episode) => {
         const epScenes = scenes
-          .filter((s) => s.episodeId === episode.id)
+          .filter((s) => s.episodeId === episode.id && !s.archived)
+          .sort((a, b) => a.order - b.order);
+        const archivedEpScenes = scenes
+          .filter((s) => s.episodeId === episode.id && s.archived)
           .sort((a, b) => a.order - b.order);
         const summary = epScenes.length > 0 ? buildSummary(epScenes) : null;
 
@@ -101,11 +105,40 @@ export default async function EpisodesPage({
                 rows={2}
               />
             </div>
+            <div className="mt-3">
+              <div className="text-[10px] uppercase tracking-wider text-neutral-500 mb-1">
+                Logline
+              </div>
+              <EditableText
+                slug={slug}
+                type="episodes"
+                id={episode.id}
+                field="logline"
+                value={episode.logline}
+                placeholder="One-sentence pitch."
+                className="text-sm"
+              />
+            </div>
+            <div className="mt-3">
+              <div className="text-[10px] uppercase tracking-wider text-neutral-500 mb-1">
+                Synopsis
+              </div>
+              <EditableTextArea
+                slug={slug}
+                type="episodes"
+                id={episode.id}
+                field="synopsis"
+                value={episode.synopsis}
+                rows={6}
+                placeholder="Write the arc, then ask Claude to propose scenes from it."
+              />
+            </div>
             {summary && (
               <p className="text-xs text-neutral-500 mt-2 mb-4">{summary}</p>
             )}
             {!summary && <div className="mb-4" />}
             <StoryboardStrip slug={slug} scenes={epScenes} episodeId={episode.id} />
+            <ArchivedScenesDisclosure slug={slug} scenes={archivedEpScenes} />
           </section>
         );
       })}

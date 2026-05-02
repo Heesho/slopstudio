@@ -12,6 +12,19 @@
   ],
   "duration": 8,
   "videoModel": "seedance_2_0",
-  "takes": [],
-  "selectedTakeId": null
+  "takes": [
+    {
+      "jobId": "bf0ec852-b3a6-4d46-919e-b32bb92345c3",
+      "videoPath": "media/scenes/000-cold-open/bf0ec852-b3a6-4d46-919e-b32bb92345c3.mp4",
+      "status": "done",
+      "generatedAt": "2026-05-02T18:17:00Z"
+    },
+    {
+      "jobId": "b4d5f286-ac62-4070-8292-352628656aa6",
+      "videoPath": "media/scenes/000-cold-open/b4d5f286-ac62-4070-8292-352628656aa6.mp4",
+      "status": "done",
+      "generatedAt": "2026-05-02T18:24:00Z"
+    }
+  ],
+  "selectedTakeId": "b4d5f286-ac62-4070-8292-352628656aa6"
 }

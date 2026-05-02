@@ -418,3 +418,69 @@ describe("updateEntityField", () => {
   });
 
 });
+
+describe("updateEntityField — story and archive fields", () => {
+  let tmpRoot: string;
+  let projectDir: string;
+
+  beforeEach(async () => {
+    tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "slopstudio-story-"));
+    projectDir = path.join(tmpRoot, "projects", slug, "content");
+    await fs.mkdir(path.join(projectDir, "episodes"), { recursive: true });
+    await fs.mkdir(path.join(projectDir, "scenes"), { recursive: true });
+    vi.spyOn(pathsModule, "repoRoot").mockReturnValue(tmpRoot);
+  });
+
+  afterEach(async () => {
+    await fs.rm(tmpRoot, { recursive: true, force: true });
+    vi.restoreAllMocks();
+  });
+
+  it("accepts logline on an episode", async () => {
+    const file = path.join(projectDir, "episodes", "ep-1.json");
+    await fs.writeFile(
+      file,
+      JSON.stringify({ id: "ep-1", number: 1, title: "T", hook: "H", scenes: [] }),
+    );
+    await updateEntityField(slug, "episodes", "ep-1", "logline", "Apex predators emerge.");
+    const updated = JSON.parse(await fs.readFile(file, "utf-8"));
+    expect(updated.logline).toBe("Apex predators emerge.");
+  });
+
+  it("accepts synopsis on an episode", async () => {
+    const file = path.join(projectDir, "episodes", "ep-1.json");
+    await fs.writeFile(
+      file,
+      JSON.stringify({ id: "ep-1", number: 1, title: "T", hook: "H", scenes: [] }),
+    );
+    await updateEntityField(slug, "episodes", "ep-1", "synopsis", "Multi-line\narc text.");
+    const updated = JSON.parse(await fs.readFile(file, "utf-8"));
+    expect(updated.synopsis).toBe("Multi-line\narc text.");
+  });
+
+  it("accepts archived on a scene", async () => {
+    const file = path.join(projectDir, "scenes", "s1.json");
+    await fs.writeFile(
+      file,
+      JSON.stringify({
+        id: "s1", episodeId: "ep-1", order: 0, title: "t", prompt: "p",
+        characters: [], locations: [], duration: 6, videoModel: "v",
+        takes: [], selectedTakeId: null,
+      }),
+    );
+    await updateEntityField(slug, "scenes", "s1", "archived", true);
+    const updated = JSON.parse(await fs.readFile(file, "utf-8"));
+    expect(updated.archived).toBe(true);
+  });
+
+  it("rejects unknown fields on episodes", async () => {
+    const file = path.join(projectDir, "episodes", "ep-1.json");
+    await fs.writeFile(
+      file,
+      JSON.stringify({ id: "ep-1", number: 1, title: "T", hook: "H", scenes: [] }),
+    );
+    await expect(
+      updateEntityField(slug, "episodes", "ep-1", "secret", "x"),
+    ).rejects.toBeInstanceOf(FieldNotEditableError);
+  });
+});

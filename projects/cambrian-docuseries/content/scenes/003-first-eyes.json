@@ -1,0 +1,13 @@
+{
+  "id": "003-first-eyes",
+  "episodeId": "ep-1-birth-of-the-predator",
+  "order": 3,
+  "title": "The First Eyes",
+  "prompt": "Macro close-up drifting across the stalked compound eye of an anomalocaris — thousands of hexagonal facets catching dim god-rays from above. The pupil-equivalent darkens as the eye tracks something off-frame. Cut to a trilobite's compound eye in a similar tight close-up, smaller, simpler, watching back. A held moment of mutual awareness across an evolutionary chasm.",
+  "characters": ["anomalocaris", "trilobite"],
+  "locations": ["burgess-shallow-sea"],
+  "duration": 6,
+  "videoModel": "seedance_2_0",
+  "takes": [],
+  "selectedTakeId": null
+}

@@ -8,6 +8,19 @@
   "locations": ["burgess-shallow-sea"],
   "duration": 6,
   "videoModel": "seedance_2_0",
-  "takes": [],
-  "selectedTakeId": null
+  "takes": [
+    {
+      "jobId": "c0227f5e-3319-411b-a262-cb3814a5ecd5",
+      "videoPath": "media/scenes/001-anomalocaris-hunt/c0227f5e-3319-411b-a262-cb3814a5ecd5.mp4",
+      "status": "done",
+      "generatedAt": "2026-05-02T18:18:30Z"
+    },
+    {
+      "jobId": "7ca634e8-3e2b-4719-8dd7-f6ab128f18e3",
+      "videoPath": "media/scenes/001-anomalocaris-hunt/7ca634e8-3e2b-4719-8dd7-f6ab128f18e3.mp4",
+      "status": "done",
+      "generatedAt": "2026-05-02T18:27:00Z"
+    }
+  ],
+  "selectedTakeId": "c0227f5e-3319-411b-a262-cb3814a5ecd5"
 }

@@ -134,6 +134,10 @@ export default function TakeStrip({
                   alt=""
                   className="w-full h-full object-cover"
                 />
+              ) : t.status === "pending" || t.status === "generating" ? (
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="w-5 h-5 rounded-full border-2 border-neutral-700 border-t-blue-400 animate-spin" />
+                </div>
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-[10px] text-neutral-500">
                   {t.status}
@@ -161,7 +165,7 @@ export default function TakeStrip({
                 </button>
               </div>
             )}
-            {t.status !== "done" && <StatusChip status={t.status} />}
+            {t.status === "failed" && <StatusChip status={t.status} />}
             {isBusy && <span className="text-[10px] text-neutral-500">…</span>}
             {errorByJob[t.jobId] && (
               <span className="text-[10px] text-red-400 max-w-[80px] text-center break-words">

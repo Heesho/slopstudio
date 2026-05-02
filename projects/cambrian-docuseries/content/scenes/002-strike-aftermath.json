@@ -1,0 +1,19 @@
+{
+  "id": "002-strike-aftermath",
+  "episodeId": "ep-1-birth-of-the-predator",
+  "order": 2,
+  "title": "The Strike",
+  "prompt": "Extreme slow motion. Anomalocaris closes the gap in a single fluid burst, its grasping appendages folding around a single trilobite. The water around them clouds with disturbed sediment. The disc-shaped oral cone works at the calcified shell. Other trilobites flee out of frame, leaving streaks in the silt. The camera holds steady on the predator, unblinking.",
+  "characters": [
+    "anomalocaris",
+    "trilobite"
+  ],
+  "locations": [
+    "burgess-shallow-sea"
+  ],
+  "duration": 6,
+  "videoModel": "seedance_2_0",
+  "takes": [],
+  "selectedTakeId": null,
+  "archived": false
+}
