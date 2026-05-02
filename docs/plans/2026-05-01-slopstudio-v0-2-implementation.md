@@ -1,5 +1,7 @@
 # slopstudio v0.2 Implementation Plan
 
+> **Status: superseded by v0.2.1 (May 2026).** This plan was executed in full, then most of it was reverted. Audio model (Tasks 1, 5, 7), `Character.voice` UI of dialogue mode, narratorVoice nullability, first-frame stuff, and SceneRefsRow are all gone. What survived: DNA dropdowns (Task 6), duration clamp + input (Tasks 2, 9), denser entity grids + slim EntityCard (Task 10), and the ref template rewrite (Task 11). Preserved as historical record of how the rejected direction was implemented.
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Tighten the dashboard's data model and surfaces — dropdowns where text fields had a constrained valid set; new scene `audioMode` (narration / dialogue / none); SceneCard restructured into a refs row showing actual conditioning images; denser entity grids; clean ref templates with no burned-in labels.

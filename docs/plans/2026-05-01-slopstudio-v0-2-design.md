@@ -1,5 +1,7 @@
 # slopstudio v0.2 — controls, audio model, denser layout — design
 
+> **Status: superseded by v0.2.1 (May 2026).** The audio model (narration/dialogue/silent) and first-frame conditioning system described below were shipped in v0.2 and then stripped in v0.2.1 — operator handles dialogue as prose in the scene prompt and narration in external tools (e.g. ElevenLabs). What survived from this design: DNA dropdowns, scene duration clamp 4–15, denser entity grids, slim EntityCard, rewritten ref templates, and `Character.voice` (kept as a free-text descriptor). This document is preserved as the historical record of the failed direction.
+
 **Date:** 2026-05-01
 
 **Goal:** Tighten the dashboard's data model and surfaces:
