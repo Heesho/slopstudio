@@ -48,9 +48,17 @@ The dashboard renders a loading thumbnail for any take whose `status` is not `do
 3. **Immediately append a placeholder take to the entity JSON** — `{ "jobId", "status": "generating" }` (no `imagePath`/`videoPath` yet). This is what makes the loading box appear in the strip. Do this in the same turn, before any `job_status` polling.
 4. Poll with `mcp__higgsfield__job_status` until status is `completed`. (You may leave the take's `status` as `generating` throughout polling.)
 5. Download the resulting URL to `projects/<slug>/media/<type>/<id>/<jobId>.<ext>`.
-6. **Update the existing take in place** (match by `jobId`): set `imagePath`/`videoPath`, `status: "done"`, `generatedAt`. Do not append a second entry — the placeholder from step 3 becomes the final take.
-7. On failure, update the same take to `status: "failed"` with an `error` string. Do not delete it; the user can right-click → Delete take.
-8. The dashboard auto-revalidates. The user left-clicks a take thumbnail to select it (the selected take fills the hero); right-click opens a menu with **Delete take**.
+6. **For scene videos with `audio: false`**, strip the audio track after download with ffmpeg before recording the path:
+
+   ```bash
+   ffmpeg -y -i <jobId>.mp4 -an -c:v copy <jobId>.muted.mp4
+   mv <jobId>.muted.mp4 <jobId>.mp4
+   ```
+
+   seedance always renders an audio track; the scene's `audio` flag is enforced at download time, not at generation time. `audio: true` (default) → keep the file as-is.
+7. **Update the existing take in place** (match by `jobId`): set `imagePath`/`videoPath`, `status: "done"`, `generatedAt`. Do not append a second entry — the placeholder from step 3 becomes the final take.
+8. On failure, update the same take to `status: "failed"` with an `error` string. Do not delete it; the user can right-click → Delete take.
+9. The dashboard auto-revalidates. The user left-clicks a take thumbnail to select it (the selected take fills the hero); right-click opens a menu with **Delete take**.
 
 ## Scene prompt assembly
 

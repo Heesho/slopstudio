@@ -293,3 +293,52 @@ describe("SceneSchema archived flag", () => {
     ).toThrow();
   });
 });
+
+describe("SceneSchema audio flag", () => {
+  const baseScene = {
+    id: "s1", episodeId: "ep-1", order: 0, title: "x", prompt: "p",
+    characters: [], locations: [], duration: 6, videoModel: "v",
+    takes: [], selectedTakeId: null,
+  };
+
+  it("defaults audio to true", () => {
+    const parsed = SceneSchema.parse(baseScene);
+    expect(parsed.audio).toBe(true);
+  });
+
+  it("accepts audio: false", () => {
+    const parsed = SceneSchema.parse({ ...baseScene, audio: false });
+    expect(parsed.audio).toBe(false);
+  });
+
+  it("rejects non-boolean audio", () => {
+    expect(() =>
+      SceneSchema.parse({ ...baseScene, audio: "loud" }),
+    ).toThrow();
+  });
+});
+
+describe("EpisodeSchema targetSeconds", () => {
+  const baseEp = {
+    id: "ep-1", number: 1, title: "T", hook: "H", scenes: [],
+  };
+
+  it("defaults targetSeconds to null", () => {
+    const parsed = EpisodeSchema.parse(baseEp);
+    expect(parsed.targetSeconds).toBeNull();
+  });
+
+  it("accepts a positive integer target", () => {
+    const parsed = EpisodeSchema.parse({ ...baseEp, targetSeconds: 60 });
+    expect(parsed.targetSeconds).toBe(60);
+  });
+
+  it("rejects zero or negative target", () => {
+    expect(() => EpisodeSchema.parse({ ...baseEp, targetSeconds: 0 })).toThrow();
+    expect(() => EpisodeSchema.parse({ ...baseEp, targetSeconds: -5 })).toThrow();
+  });
+
+  it("rejects non-integer target", () => {
+    expect(() => EpisodeSchema.parse({ ...baseEp, targetSeconds: 60.5 })).toThrow();
+  });
+});

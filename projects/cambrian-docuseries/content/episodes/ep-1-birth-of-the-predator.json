@@ -5,6 +5,7 @@
   "hook": "What if I told you the world's first apex predator was the size of a housecat?",
   "logline": "The world's first apex predator emerges from the Cambrian seas, and life on Earth learns to fear for the first time.",
   "synopsis": "540 million years ago, the Cambrian seafloor is a peaceful place. Trilobites graze on microbial mats in the shallows of the Burgess reef, oblivious. Then something new appears in the shadows — Anomalocaris, the first true apex predator, equipped with the first true predator-grade compound eyes. We witness a single hunt unfold: the silent approach, the explosive strike, the kill. Then we pull back to see what the trilobites have learned in the days that follow — to hide, to flee, to curl into armored balls when the shadow passes overhead. This is the moment evolution acquires its sharpest tool: the predator-prey arms race. The world will never be calm again.",
+  "targetSeconds": 60,
   "scenes": [
     "000-cold-open",
     "001-anomalocaris-hunt",

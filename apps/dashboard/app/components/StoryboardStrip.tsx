@@ -1,7 +1,6 @@
 import Link from "next/link";
-import type { Scene, TakeStatus, VideoTake } from "@/lib/schemas";
+import type { Scene, VideoTake } from "@/lib/schemas";
 import { mediaUrl } from "@/lib/media";
-import StatusChip from "./StatusChip";
 
 type Props = {
   slug: string;
@@ -25,7 +24,6 @@ export default function StoryboardStrip({ slug, scenes, episodeId }: Props) {
       {sortedScenes.map((scene) => {
         const selectedTake: VideoTake | null =
           scene.takes.find((t) => t.jobId === scene.selectedTakeId) ?? null;
-        const status: TakeStatus = selectedTake?.status ?? "pending";
         const videoSrc = selectedTake?.videoPath
           ? `${mediaUrl(slug, selectedTake.videoPath)}#t=0.5`
           : null;
@@ -51,11 +49,8 @@ export default function StoryboardStrip({ slug, scenes, episodeId }: Props) {
                 </div>
               )}
             </div>
-            <div className="mt-1.5 flex items-center justify-between gap-2">
-              <span className="text-xs text-neutral-400 font-mono">
-                #{scene.order}
-              </span>
-              <StatusChip status={status} />
+            <div className="mt-1.5 text-xs text-neutral-400 font-mono">
+              #{scene.order}
             </div>
           </Link>
         );

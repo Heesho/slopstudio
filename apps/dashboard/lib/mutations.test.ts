@@ -483,4 +483,30 @@ describe("updateEntityField — story and archive fields", () => {
       updateEntityField(slug, "episodes", "ep-1", "secret", "x"),
     ).rejects.toBeInstanceOf(FieldNotEditableError);
   });
+
+  it("accepts targetSeconds on an episode", async () => {
+    const file = path.join(projectDir, "episodes", "ep-1.json");
+    await fs.writeFile(
+      file,
+      JSON.stringify({ id: "ep-1", number: 1, title: "T", hook: "H", scenes: [] }),
+    );
+    await updateEntityField(slug, "episodes", "ep-1", "targetSeconds", 60);
+    const updated = JSON.parse(await fs.readFile(file, "utf-8"));
+    expect(updated.targetSeconds).toBe(60);
+  });
+
+  it("accepts audio: false on a scene", async () => {
+    const file = path.join(projectDir, "scenes", "s1.json");
+    await fs.writeFile(
+      file,
+      JSON.stringify({
+        id: "s1", episodeId: "ep-1", order: 0, title: "t", prompt: "p",
+        characters: [], locations: [], duration: 6, videoModel: "v",
+        takes: [], selectedTakeId: null,
+      }),
+    );
+    await updateEntityField(slug, "scenes", "s1", "audio", false);
+    const updated = JSON.parse(await fs.readFile(file, "utf-8"));
+    expect(updated.audio).toBe(false);
+  });
 });

@@ -96,6 +96,7 @@ export const EDITABLE_FIELDS: Record<EntityType, readonly string[]> = {
     "characters",
     "locations",
     "archived",
+    "audio",
     "genre",
     "colorPalette",
     "lighting",
@@ -105,7 +106,7 @@ export const EDITABLE_FIELDS: Record<EntityType, readonly string[]> = {
     "focalLength",
     "aperture",
   ],
-  episodes: ["title", "hook", "logline", "synopsis"],
+  episodes: ["title", "hook", "logline", "synopsis", "targetSeconds"],
 } as const;
 
 const ID_PATTERN = /^[a-zA-Z0-9_-]+$/;

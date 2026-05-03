@@ -1,7 +1,9 @@
 import ArchivedScenesDisclosure from "@/app/components/ArchivedScenesDisclosure";
 import EmptyState from "@/app/components/EmptyState";
+import EditableNumber from "@/app/components/editable/EditableNumber";
 import EditableText from "@/app/components/editable/EditableText";
 import EditableTextArea from "@/app/components/editable/EditableTextArea";
+import EpisodeTargetSetter from "@/app/components/EpisodeTargetSetter";
 import StoryboardStrip from "@/app/components/StoryboardStrip";
 import { readAllEpisodes, readAllScenes } from "@/lib/content";
 import type { Scene, TakeStatus } from "@/lib/schemas";
@@ -11,7 +13,7 @@ function sceneStatus(scene: Scene): TakeStatus {
   return sel?.status ?? "pending";
 }
 
-function buildSummary(scenes: Scene[]): string {
+function buildSummary(scenes: Scene[], targetSeconds: number | null): string {
   const counts: Record<TakeStatus, number> = {
     pending: 0,
     generating: 0,
@@ -25,11 +27,16 @@ function buildSummary(scenes: Scene[]): string {
     if (status === "done") doneSeconds += s.duration;
   }
   const total = scenes.length;
+  const drafted = total - counts.done;
   const parts: string[] = [];
-  parts.push(`${counts.done} / ${total} scenes done`);
-  if (doneSeconds > 0) parts.push(`~${Math.round(doneSeconds)}s total`);
+  if (targetSeconds !== null) {
+    parts.push(`${Math.round(doneSeconds)}s / ${targetSeconds}s target`);
+  } else if (doneSeconds > 0) {
+    parts.push(`~${Math.round(doneSeconds)}s total`);
+  }
+  parts.push(`${counts.done} done`);
+  if (drafted > 0) parts.push(`${drafted} drafted`);
   if (counts.generating > 0) parts.push(`${counts.generating} generating`);
-  if (counts.pending > 0) parts.push(`${counts.pending} pending`);
   if (counts.failed > 0) parts.push(`${counts.failed} failed`);
   return parts.join(" · ");
 }
@@ -73,7 +80,10 @@ export default async function EpisodesPage({
         const archivedEpScenes = scenes
           .filter((s) => s.episodeId === episode.id && s.archived)
           .sort((a, b) => a.order - b.order);
-        const summary = epScenes.length > 0 ? buildSummary(epScenes) : null;
+        const summary =
+          epScenes.length > 0 || episode.targetSeconds !== null
+            ? buildSummary(epScenes, episode.targetSeconds)
+            : null;
 
         return (
           <section
@@ -132,6 +142,24 @@ export default async function EpisodesPage({
                 rows={6}
                 placeholder="Write the arc, then ask Claude to propose scenes from it."
               />
+            </div>
+            <div className="mt-3 flex items-center gap-2 text-xs text-neutral-500">
+              <span className="text-[10px] uppercase tracking-wider">Target</span>
+              {episode.targetSeconds !== null ? (
+                <>
+                  <EditableNumber
+                    slug={slug}
+                    type="episodes"
+                    id={episode.id}
+                    field="targetSeconds"
+                    value={episode.targetSeconds}
+                    min={1}
+                  />
+                  <span>s</span>
+                </>
+              ) : (
+                <EpisodeTargetSetter slug={slug} episodeId={episode.id} />
+              )}
             </div>
             {summary && (
               <p className="text-xs text-neutral-500 mt-2 mb-4">{summary}</p>

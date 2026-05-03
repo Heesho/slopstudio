@@ -1,5 +1,6 @@
 import type { Character, Location, Scene, VideoTake } from "@/lib/schemas";
 import { mediaUrl } from "@/lib/media";
+import EditableBoolean from "./editable/EditableBoolean";
 import EditableChips from "./editable/EditableChips";
 import EditableNumber from "./editable/EditableNumber";
 import EditableText from "./editable/EditableText";
@@ -109,19 +110,33 @@ export default function SceneCard({
         {/* Cinematics */}
         <SceneCinematics slug={slug} scene={scene} />
 
-        {/* Duration */}
-        <div className="flex items-center gap-1.5 text-xs text-neutral-500">
-          <span>Duration</span>
-          <EditableNumber
-            slug={slug}
-            type="scenes"
-            id={scene.id}
-            field="duration"
-            value={scene.duration}
-            min={4}
-            max={15}
-          />
-          <span>s</span>
+        {/* Duration + Audio */}
+        <div className="flex items-center gap-3 text-xs text-neutral-500">
+          <div className="flex items-center gap-1.5">
+            <span>Duration</span>
+            <EditableNumber
+              slug={slug}
+              type="scenes"
+              id={scene.id}
+              field="duration"
+              value={scene.duration}
+              min={4}
+              max={15}
+            />
+            <span>s</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span>Audio</span>
+            <EditableBoolean
+              slug={slug}
+              type="scenes"
+              id={scene.id}
+              field="audio"
+              value={scene.audio}
+              trueLabel="On"
+              falseLabel="Silent"
+            />
+          </div>
         </div>
 
         {/* Cast */}
